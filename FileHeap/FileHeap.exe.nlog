@@ -5,7 +5,7 @@
   <targets>
     <target name="console" xsi:type="ColoredConsole">
       <layout xsi:type="SimpleLayout">
-        <text>${date} [${uppercase:inner=${level}}] [${threadid}:${threadname}] [${logger}] (${ndc})${newline}${message}${onexception:inner=${newline}${exception:format=ToString}}${newline}</text>
+        <text>${date} [${uppercase:inner=${level}}] [${threadid}] [${logger}] (${ndc})${newline}${message}${onexception:inner=${newline}${exception:format=ToString}}${newline}</text>
       </layout>
     </target>
     <target name="file" xsi:type="File" fileName="${basedir}/Log.txt" encoding="utf-8">
