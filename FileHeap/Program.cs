@@ -104,7 +104,17 @@ namespace FileHeap
 				}
 
 				sw.Stop();
-				logger.Info("Created {0} hard links in {1} ms.", count, sw.ElapsedMilliseconds);
+
+				long seconds = sw.ElapsedMilliseconds / 1000;
+				long ips = seconds > 0
+					? count / seconds
+					: count;
+
+				logger.Info(
+					"Created {0} hard links in {1} ms. {2} IPS.",
+					count,
+					sw.ElapsedMilliseconds,
+					ips);
 			}
 			catch (Win32Exception ex)
 			{
