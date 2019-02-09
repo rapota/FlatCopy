@@ -20,21 +20,22 @@ namespace FileHeap
 			AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainUnhandledException;
 			TaskScheduler.UnobservedTaskException += TaskSchedulerUnobservedTaskException;
 
-			Options options = new Options();
-			if (!Parser.Default.ParseArguments(args, options))
-			{
-				string help = options.GetUsage();
-				logger.Error(help);
-			}
-			else
-			{
-				Run(options);
-			}
+		    Parser.Default.ParseArguments<Options>(args)
+		        .WithParsed(Run)
+		        .WithNotParsed(HandleParseError);
 
 			logger.Debug("Application stoped.");
 		}
 
-		private static void OnCurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+	    private static void HandleParseError(IEnumerable<Error> errs)
+	    {
+	        foreach (Error error in errs)
+	        {
+	            logger.Error(error);
+	        }
+	    }
+
+        private static void OnCurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			Exception ex = e.ExceptionObject as Exception;
 			if (ex != null)
