@@ -16,7 +16,10 @@ namespace FileHeap
 		[Option('a', "async", Default = false, HelpText = "Asynchronous processing.")]
 		public bool IsAsync { get; set; }
 
-		[Option('m', "multi", Default = false, HelpText = "parallel processing.")]
+		[Option('m', "multi", Default = false, HelpText = "Parallel processing.")]
 		public bool IsParalell { get; set; }
-	}
+
+        [Option('l', "link", Default = false, HelpText = "Create hardlinks.")]
+        public bool CreateLinks { get; set; }
+    }
 }
