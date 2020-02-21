@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using FlatCopy.Services;
 using NLog;
 
 namespace FileHeap
@@ -134,7 +135,7 @@ namespace FileHeap
         private static long RunNormal(Options options)
         {
             long result = 0;
-            foreach (FileLink fileLink in GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern))
+            foreach (FileLink fileLink in FlatFolderService.GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern).Where(x => !File.Exists(x.Target)))
             {
                 CreateCopy(fileLink, options.CreateLinks);
                 result++;
@@ -155,7 +156,8 @@ namespace FileHeap
         {
             long result = 0;
 
-            GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern)
+            FlatFolderService.GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern)
+                .Where(x => !File.Exists(x.Target))
                 .AsParallel()
                 .ForAll(fileLink =>
                 {
@@ -176,33 +178,13 @@ namespace FileHeap
         private static async Task<long> CreateLinksAsync(Options options)
         {
             long result = 0;
-            foreach (FileLink fileLink in GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern))
+            foreach (FileLink fileLink in FlatFolderService.GetFileLinks(options.SourceFolder, options.TargetFolder, options.SearchPattern).Where(x => !File.Exists(x.Target)))
             {
                 await CreateCopyAsync(fileLink, options.CreateLinks);
                 result++;
             }
 
             return result;
-        }
-
-        private static IEnumerable<FileLink> GetFileLinks(string sourceFolder, string targetFolder, string pattern)
-        {
-            foreach (string sourceFile in Directory.EnumerateFiles(sourceFolder, pattern, SearchOption.AllDirectories))
-            {
-                string relativeName = sourceFile.Remove(0, sourceFolder.Length);
-
-                string normilizedName = relativeName
-                    .TrimStart(Path.DirectorySeparatorChar)
-                    .Replace(Path.DirectorySeparatorChar, '_');
-
-                string targetFile = Path.Combine(targetFolder, normilizedName);
-                if (File.Exists(targetFile))
-                {
-                    continue;
-                }
-
-                yield return new FileLink(sourceFile, targetFile);
-            }
         }
 
         private static void CreateCopy(FileLink fileLink, bool createHadLink)
