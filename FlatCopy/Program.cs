@@ -1,9 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using FlatCopy.Services;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Core;
 
 namespace FlatCopy
 {
@@ -11,42 +9,35 @@ namespace FlatCopy
     {
         static void Main(string[] args)
         {
-            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-                .AddCommandLine(args);
-            IConfigurationRoot configuration = configurationBuilder.Build();
+            IConfigurationRoot configuration = BuildConfiguration(args);
 
-            string source = configuration["source"];
-            string target = configuration["target"];
+            Logger logger = CreateLogger(configuration);
 
-            if (string.IsNullOrEmpty(source))
-            {
-                Console.WriteLine("Wrong source folder.");
-                return;
-            }
-            if (string.IsNullOrEmpty(target))
-            {
-                Console.WriteLine("Wrong target folder.");
-                return;
-            }
+            CopyOptions copyOptions = configuration.GetSection("options").Get<CopyOptions>();
 
-            if (!Directory.Exists(source))
-            {
-                Console.WriteLine("Source folder not found.");
-            }
-            if (!Directory.Exists(target))
-            {
-                Directory.CreateDirectory(target);
-                Console.WriteLine("Created target folder {0}", target);
-            }
+            ServiceCollection services = new ServiceCollection();
+            services
+                .AddSingleton(copyOptions)
+                .AddLogging(configure => configure.AddSerilog(logger, true))
+                .AddSingleton<Application>();
 
-            Parallel.ForEach(
-                FlatFolderService.GetFileLinks(source, target, "*.*").Where(x => !File.Exists(x.Target)),
-                fileLink =>
-                {
-                    File.Copy(fileLink.Source, fileLink.Target);
-                });
+            using ServiceProvider provider = services.BuildServiceProvider(true);
+            Application application = provider.GetService<Application>();
+            application.Run();
+        }
 
-            Console.WriteLine("Done!");
+        private static IConfigurationRoot BuildConfiguration(string[] args) =>
+            new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .AddCommandLine(args)
+                .Build();
+
+        private static Logger CreateLogger(IConfiguration configuration)
+        {
+            LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+            loggerConfiguration.ReadFrom.Configuration(configuration);
+
+            return loggerConfiguration.CreateLogger();
         }
     }
 }
