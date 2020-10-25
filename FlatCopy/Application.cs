@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -82,9 +83,31 @@ namespace FlatCopy
 
         protected void CopyFile(string sourceFileName, string destFileName)
         {
-            if (_options.Overwrite)
+            if (_options.Overwrite == OverwriteOption.Yes)
             {
                 CopyInternal(sourceFileName, destFileName, true);
+            }
+            else if (_options.Overwrite == OverwriteOption.Newer)
+            {
+                if (File.Exists(destFileName))
+                {
+                    DateTime sourceTime = File.GetLastWriteTimeUtc(sourceFileName);
+                    DateTime destTime = File.GetLastWriteTimeUtc(destFileName);
+                    if (sourceTime > destTime)
+                    {
+                        CopyInternal(sourceFileName, destFileName, true);
+                        _logger.LogInformation("Overwritten file to {path}", destFileName);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Skipped file {path}", destFileName);
+                    }
+                }
+                else
+                {
+                    CopyInternal(sourceFileName, destFileName, false);
+                    _logger.LogInformation("Copied file to {path}", destFileName);
+                }
             }
             else
             {

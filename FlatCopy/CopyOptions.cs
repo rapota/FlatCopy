@@ -8,7 +8,7 @@
 
         public string SearchPattern { get; set; }
 
-        public bool Overwrite { get; set; }
+        public OverwriteOption Overwrite { get; set; }
 
         public bool IsParallel { get; set; }
 
