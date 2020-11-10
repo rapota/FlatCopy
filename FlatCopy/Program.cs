@@ -19,6 +19,7 @@ namespace FlatCopy
             services
                 .AddSingleton(copyOptions)
                 .AddLogging(configure => configure.AddSerilog(logger, true))
+                .AddSingleton<FileService>()
                 .AddSingleton<Application>();
 
             using ServiceProvider provider = services.BuildServiceProvider(true);

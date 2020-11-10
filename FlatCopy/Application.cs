@@ -7,15 +7,17 @@ using Microsoft.Extensions.Logging;
 
 namespace FlatCopy
 {
-    public class Application
+    internal class Application
     {
         private readonly ILogger<Application> _logger;
         private readonly CopyOptions _options;
+        private readonly FileService _fileService;
 
-        public Application(ILogger<Application> logger, CopyOptions options)
+        public Application(ILogger<Application> logger, CopyOptions options, FileService fileService)
         {
             _logger = logger;
             _options = options;
+            _fileService = fileService;
         }
 
         public void Run()
@@ -69,60 +71,6 @@ namespace FlatCopy
                 : results.AsParallel().Select(TryDeleteExtraFile).Count(x => x);
         }
 
-        protected void CopyInternal(string sourceFileName, string destFileName, bool overwrite)
-        {
-            if (_options.CreateHardLinks)
-            {
-                FileManagementFunctions.CreateHardLink(destFileName, sourceFileName);
-            }
-            else
-            {
-                File.Copy(sourceFileName, destFileName, overwrite);
-            }
-        }
-
-        protected void CopyFile(string sourceFileName, string destFileName)
-        {
-            if (_options.Overwrite == OverwriteOption.Yes)
-            {
-                CopyInternal(sourceFileName, destFileName, true);
-            }
-            else if (_options.Overwrite == OverwriteOption.Newer)
-            {
-                if (File.Exists(destFileName))
-                {
-                    DateTime sourceTime = File.GetLastWriteTimeUtc(sourceFileName);
-                    DateTime destTime = File.GetLastWriteTimeUtc(destFileName);
-                    if (sourceTime > destTime)
-                    {
-                        CopyInternal(sourceFileName, destFileName, true);
-                        _logger.LogInformation("Overwritten file to {path}", destFileName);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Skipped file {path}", destFileName);
-                    }
-                }
-                else
-                {
-                    CopyInternal(sourceFileName, destFileName, false);
-                    _logger.LogInformation("Copied file to {path}", destFileName);
-                }
-            }
-            else
-            {
-                if (File.Exists(destFileName))
-                {
-                    _logger.LogDebug("Skipped file {path}", destFileName);
-                }
-                else
-                {
-                    CopyInternal(sourceFileName, destFileName, false);
-                    _logger.LogInformation("Copied file to {path}", destFileName);
-                }
-            }
-        }
-
         private string ProcessFile(string filePath)
         {
             string relativeName = filePath.Remove(0, _options.SourceFolder.Length);
@@ -133,7 +81,7 @@ namespace FlatCopy
 
             string targetFile = Path.Combine(_options.TargetFolder, normalizedName);
 
-            CopyFile(filePath, targetFile);
+            _fileService.Copy(filePath, targetFile, _options.Overwrite, _options.CreateHardLinks);
 
             return targetFile;
         }
