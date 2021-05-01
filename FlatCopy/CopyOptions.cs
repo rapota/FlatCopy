@@ -4,7 +4,7 @@
     {
         public string TargetFolder { get; set; }
 
-        public string SourceFolder { get; set; }
+        public string SourceFolders { get; set; }
 
         public string SearchPattern { get; set; }
 

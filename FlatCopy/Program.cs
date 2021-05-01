@@ -24,7 +24,7 @@ namespace FlatCopy
 
             using ServiceProvider provider = services.BuildServiceProvider(true);
             Application application = provider.GetService<Application>();
-            application.Run();
+            application?.Run();
         }
 
         private static IConfigurationRoot BuildConfiguration(string[] args) =>

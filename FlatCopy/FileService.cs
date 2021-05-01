@@ -55,7 +55,6 @@ namespace FlatCopy
             }
         }
 
-
         private void CopyInternal(string sourceFileName, string destFileName, bool overwrite, bool createHardLinks)
         {
             if (createHardLinks)
