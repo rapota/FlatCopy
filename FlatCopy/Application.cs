@@ -76,8 +76,7 @@ namespace FlatCopy
 
         private List<string> CopyFiles()
         {
-            string[] folders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
-            _logger.LogInformation("Source folders: {folders}", folders);
+            _logger.LogInformation("Source folders: {folders}", _options.SourceFolders);
 
             if (!Directory.Exists(_options.TargetFolder))
             {
@@ -85,7 +84,7 @@ namespace FlatCopy
                 _logger.LogInformation("Created target folder: {folder}", _options.TargetFolder);
             }
 
-            IEnumerable<string> sourceFolders = folders;
+            IEnumerable<string> sourceFolders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
             if (_options.IsParallel)
             {
                 sourceFolders = sourceFolders.AsParallel();
