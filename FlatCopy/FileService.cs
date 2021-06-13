@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace FlatCopy
 {
-    internal class FileService
+    public class FileService
     {
         private readonly ILogger<FileService> _logger;
 
@@ -53,6 +55,33 @@ namespace FlatCopy
                     _logger.LogInformation("Copied file to {path}", destFileName);
                 }
             }
+        }
+
+        public int DeleteExtraFiles(IEnumerable<string> files, string targetFolder, bool isParalel)
+        {
+            HashSet<string> resultSet = files.ToHashSet();
+
+            bool TryDeleteExtraFile(string filePath)
+            {
+                if (!resultSet.Contains(filePath))
+                {
+                    File.Delete(filePath);
+                    _logger.LogInformation("Deleted extra file {path}", filePath);
+                    return true;
+                }
+
+                return false;
+            }
+
+            IEnumerable<string> results = Directory.EnumerateFiles(targetFolder);
+            if (isParalel)
+            {
+                results = results.AsParallel();
+            }
+
+            return results
+                .Select(TryDeleteExtraFile)
+                .Count(x => x);
         }
 
         private void CopyInternal(string sourceFileName, string destFileName, bool overwrite, bool createHardLinks)

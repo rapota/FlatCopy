@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FlatCopy
 {
-    internal class Application
+    public class Application
     {
         private readonly ILogger<Application> _logger;
         private readonly CopyOptions _options;
@@ -27,32 +27,27 @@ namespace FlatCopy
             sw.Stop();
 
             Stopwatch swd = Stopwatch.StartNew();
-            int count = DeleteExtraFiles(copiedFiles);
+            int count = _fileService.DeleteExtraFiles(copiedFiles, _options.TargetFolder, _options.IsParallel);
             swd.Stop();
 
             _logger.LogInformation("Processed {count} files for {elapsed}", copiedFiles.Count, sw.Elapsed);
             _logger.LogInformation("Deleted {count} extra files for {elapsed}", count, swd.Elapsed);
         }
-        private static string CalculateTargetFile(string filePath, string sourceFolder, string targetFolder)
-        {
-            string relativeName = filePath.Remove(0, sourceFolder.Length);
 
-            string normalizedName = relativeName
-                .TrimStart(Path.DirectorySeparatorChar)
-                .Replace(Path.DirectorySeparatorChar, '_');
+        public static string CalculateTargetFile(string filePath, string sourceFolder, string targetFolder)
+        {
+            sourceFolder = Path.TrimEndingDirectorySeparator(sourceFolder);
+            string relativePath = Path.GetRelativePath(sourceFolder, filePath);
+            
+            string directoryName = Path.GetFileName(sourceFolder);
+            string normalizedName = directoryName + "_" + relativePath.Replace(Path.DirectorySeparatorChar, '_');
 
             return Path.Combine(targetFolder, normalizedName);
         }
 
-        private static IEnumerable<(string SourceFile, string TargetFile)> GetPairsForFolder(string sourceFolder, string searchPattern, string targetFolder)
-        {
-            return Directory.EnumerateFiles(searchPattern, searchPattern, SearchOption.AllDirectories)
-                .Select(x => (x, CalculateTargetFile(x, sourceFolder, targetFolder)));
-        }
-
         private string[] CopyFolder(string sourceFolder)
         {
-            if (!Directory.Exists(_options.TargetFolder))
+            if (!Directory.Exists(sourceFolder))
             {
                 _logger.LogWarning("Directory not found: {directory}", sourceFolder);
                 return Array.Empty<string>();
@@ -61,7 +56,15 @@ namespace FlatCopy
             IEnumerable<string> files = Directory.EnumerateFiles(sourceFolder, _options.SearchPattern, SearchOption.AllDirectories);
             if (_options.IsParallel)
             {
-                files = files.AsParallel();
+                return files
+                    .AsParallel()
+                    .Select(x =>
+                    {
+                        string targetFile = CalculateTargetFile(x, sourceFolder, _options.TargetFolder);
+                        _fileService.Copy(x, targetFile, _options.Overwrite, _options.CreateHardLinks);
+                        return targetFile;
+                    })
+                    .ToArray();
             }
 
             return files
@@ -84,45 +87,20 @@ namespace FlatCopy
                 _logger.LogInformation("Created target folder: {folder}", _options.TargetFolder);
             }
 
-            IEnumerable<string> sourceFolders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
-            if (_options.IsParallel)
+            string[] sourceFolders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            List<string> result = new List<string>(100000);
+            foreach (string sourceFolder in sourceFolders)
             {
-                sourceFolders = sourceFolders.AsParallel();
-            }
-
-            return sourceFolders
-                .SelectMany(CopyFolder)
-                .ToList();
-        }
-
-        private int DeleteExtraFiles(IEnumerable<string> files)
-        {
-            HashSet<string> resultSet = files.ToHashSet();
-
-            bool TryDeleteExtraFile(string filePath)
-            {
-                if (!resultSet.Contains(filePath))
+                string[] copiedFiles;
+                using (_logger.BeginScope(sourceFolder))
                 {
-                    File.Delete(filePath);
-                    _logger.LogInformation("Deleted extra file {path}", filePath);
-                    return true;
+                    copiedFiles = CopyFolder(sourceFolder);
+                    _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
                 }
-
-                return false;
+                result.AddRange(copiedFiles);
             }
 
-            IEnumerable<string> results = Directory.EnumerateFiles(_options.TargetFolder, _options.SearchPattern, SearchOption.TopDirectoryOnly);
-            if (_options.IsParallel)
-            {
-                return results
-                    .AsParallel()
-                    .Select(TryDeleteExtraFile)
-                    .Count(x => x);
-            }
-
-            return results
-                .Select(TryDeleteExtraFile)
-                .Count(x => x);
+            return result;
         }
     }
 }
