@@ -45,7 +45,7 @@ namespace FlatCopy
             return Path.Combine(targetFolder, normalizedName);
         }
 
-        private string[] CopyFolder(string sourceFolder)
+        private string[] CopyFolder(string sourceFolder, HashSet<string> skipExtensions)
         {
             if (!Directory.Exists(sourceFolder))
             {
@@ -53,7 +53,13 @@ namespace FlatCopy
                 return Array.Empty<string>();
             }
 
-            IEnumerable<string> files = Directory.EnumerateFiles(sourceFolder, _options.SearchPattern, SearchOption.AllDirectories);
+            bool ShouldCopy(string filePath)
+            {
+                string extension = Path.GetExtension(filePath);
+                return !skipExtensions.Contains(extension);
+            }
+
+            IEnumerable<string> files = Directory.EnumerateFiles(sourceFolder, _options.SearchPattern, SearchOption.AllDirectories).Where(ShouldCopy);
             if (_options.IsParallel)
             {
                 return files
@@ -87,16 +93,18 @@ namespace FlatCopy
                 _logger.LogInformation("Created target folder: {folder}", _options.TargetFolder);
             }
 
+            HashSet<string> skipExtensions = _options.SkipExtensions
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             string[] sourceFolders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
             List<string> result = new List<string>(100000);
             foreach (string sourceFolder in sourceFolders)
             {
-                string[] copiedFiles;
-                using (_logger.BeginScope(sourceFolder))
-                {
-                    copiedFiles = CopyFolder(sourceFolder);
-                    _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
-                }
+                using IDisposable scope = _logger.BeginScope(sourceFolder);
+                
+                var copiedFiles = CopyFolder(sourceFolder, skipExtensions);
+                _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
                 result.AddRange(copiedFiles);
             }
 

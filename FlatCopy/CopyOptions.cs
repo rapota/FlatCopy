@@ -8,6 +8,8 @@
 
         public string SearchPattern { get; set; }
 
+        public string SkipExtensions { get; set; }
+
         public OverwriteOption Overwrite { get; set; }
 
         public bool IsParallel { get; set; }
