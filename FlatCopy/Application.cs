@@ -85,7 +85,7 @@ namespace FlatCopy
 
         private List<string> CopyFiles()
         {
-            _logger.LogInformation("Source folders: {folders}", _options.SourceFolders);
+            _logger.LogInformation("Source folders: {folders}", string.Join(';', _options.SourceFolders));
 
             if (!Directory.Exists(_options.TargetFolder))
             {
@@ -93,17 +93,14 @@ namespace FlatCopy
                 _logger.LogInformation("Created target folder: {folder}", _options.TargetFolder);
             }
 
-            HashSet<string> skipExtensions = _options.SkipExtensions
-                .Split(';', StringSplitOptions.RemoveEmptyEntries)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> skipExtensions = _options.SkipExtensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            string[] sourceFolders = _options.SourceFolders.Split(';', StringSplitOptions.RemoveEmptyEntries);
             List<string> result = new List<string>(100000);
-            foreach (string sourceFolder in sourceFolders)
+            foreach (string sourceFolder in _options.SourceFolders)
             {
                 using IDisposable scope = _logger.BeginScope(sourceFolder);
                 
-                var copiedFiles = CopyFolder(sourceFolder, skipExtensions);
+                string[] copiedFiles = CopyFolder(sourceFolder, skipExtensions);
                 _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
                 result.AddRange(copiedFiles);
             }

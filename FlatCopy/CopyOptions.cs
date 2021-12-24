@@ -1,14 +1,16 @@
-﻿namespace FlatCopy
+﻿using System.Collections.Generic;
+
+namespace FlatCopy
 {
     public class CopyOptions
     {
         public string TargetFolder { get; set; }
 
-        public string SourceFolders { get; set; }
+        public List<string> SourceFolders { get; set; }
 
         public string SearchPattern { get; set; }
 
-        public string SkipExtensions { get; set; }
+        public List<string> SkipExtensions { get; set; }
 
         public OverwriteOption Overwrite { get; set; }
 
