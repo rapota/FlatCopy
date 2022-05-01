@@ -1,30 +1,28 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace FlatCopy
-{
-    public static class FileManagementFunctions
-    {
-        /// <summary>
-        /// Establishes a hard link between an existing file and a new file. This function is only supported on the NTFS file system, and only for files, not directories.
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="existingFileName"></param>
-        /// <exception cref="Win32Exception">In case of error.</exception>
-        public static void CreateHardLink(string fileName, string existingFileName)
-        {
-            if (!NativeMethods.CreateHardLink(fileName, existingFileName, IntPtr.Zero))
-            {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-        }
+namespace FlatCopy;
 
-        private static class NativeMethods
+public static class FileManagementFunctions
+{
+    /// <summary>
+    /// Establishes a hard link between an existing file and a new file. This function is only supported on the NTFS file system, and only for files, not directories.
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="existingFileName"></param>
+    /// <exception cref="Win32Exception">In case of error.</exception>
+    public static void CreateHardLink(string fileName, string existingFileName)
+    {
+        if (!NativeMethods.CreateHardLink(fileName, existingFileName, IntPtr.Zero))
         {
-            [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
+            throw new Win32Exception(Marshal.GetLastWin32Error());
         }
+    }
+
+    private static class NativeMethods
+    {
+        [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
     }
 }

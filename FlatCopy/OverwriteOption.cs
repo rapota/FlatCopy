@@ -1,9 +1,8 @@
-﻿namespace FlatCopy
+﻿namespace FlatCopy;
+
+public enum OverwriteOption
 {
-    public enum OverwriteOption
-    {
-        No,
-        Newer,
-        Yes
-    }
+    No,
+    Newer,
+    Yes
 }
