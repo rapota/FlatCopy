@@ -1,4 +1,4 @@
-﻿namespace FlatCopy;
+﻿namespace FlatCopy.Settings;
 
 public class CopyOptions
 {
@@ -9,6 +9,8 @@ public class CopyOptions
     public string SearchPattern { get; set; }
 
     public List<string> SkipExtensions { get; set; }
+
+    public List<string> SkipFolders { get; set; }
 
     public OverwriteOption Overwrite { get; set; }
 
@@ -22,6 +24,7 @@ public class CopyOptions
         SourceFolders = new List<string>();
         SearchPattern = string.Empty;
         SkipExtensions = new List<string>();
+        SkipFolders = new List<string>();
         Overwrite = OverwriteOption.No;
     }
 }

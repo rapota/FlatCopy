@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FlatCopy.Settings;
+using Microsoft.Extensions.Logging;
 
 namespace FlatCopy;
 

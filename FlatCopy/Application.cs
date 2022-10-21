@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using FlatCopy.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FlatCopy;
 
@@ -9,10 +11,10 @@ public class Application
     private readonly CopyOptions _options;
     private readonly FileService _fileService;
 
-    public Application(ILogger<Application> logger, CopyOptions options, FileService fileService)
+    public Application(ILogger<Application> logger, IOptions<CopyOptions> options, FileService fileService)
     {
         _logger = logger;
-        _options = options;
+        _options = options.Value;
         _fileService = fileService;
     }
 
@@ -34,14 +36,14 @@ public class Application
     {
         sourceFolder = Path.TrimEndingDirectorySeparator(sourceFolder);
         string relativePath = Path.GetRelativePath(sourceFolder, filePath);
-            
+
         string directoryName = Path.GetFileName(sourceFolder);
         string normalizedName = directoryName + "_" + relativePath.Replace(Path.DirectorySeparatorChar, '_');
 
         return Path.Combine(targetFolder, normalizedName);
     }
 
-    private string[] CopyFolder(string sourceFolder, HashSet<string> skipExtensions)
+    private string[] CopyFolder(string sourceFolder, HashSet<string> skipExtensions, List<string> skipFolders)
     {
         if (!Directory.Exists(sourceFolder))
         {
@@ -51,6 +53,14 @@ public class Application
 
         bool ShouldCopy(string filePath)
         {
+            foreach (string skipFolder in skipFolders)
+            {
+                if (filePath.StartsWith(skipFolder, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
             string extension = Path.GetExtension(filePath);
             return !skipExtensions.Contains(extension);
         }
@@ -84,13 +94,18 @@ public class Application
         }
 
         HashSet<string> skipExtensions = _options.SkipExtensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        List<string> skipFolders = _options.SkipFolders.Select(x =>
+                x.EndsWith(Path.DirectorySeparatorChar)
+                    ? x
+                    : x + Path.DirectorySeparatorChar)
+            .ToList();
 
         List<string> result = new List<string>(100000);
         foreach (string sourceFolder in _options.SourceFolders)
         {
             using IDisposable scope = _logger.BeginScope(sourceFolder);
-                
-            string[] copiedFiles = CopyFolder(sourceFolder, skipExtensions);
+
+            string[] copiedFiles = CopyFolder(sourceFolder, skipExtensions, skipFolders);
             _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
             result.AddRange(copiedFiles);
         }

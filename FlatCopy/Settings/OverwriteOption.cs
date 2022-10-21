@@ -1,4 +1,4 @@
-﻿namespace FlatCopy;
+﻿namespace FlatCopy.Settings;
 
 public enum OverwriteOption
 {
