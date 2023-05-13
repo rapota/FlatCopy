@@ -14,7 +14,7 @@ internal static class ProgramExtensions
 
     public static Logger CreateLogger(IConfiguration configuration)
     {
-        LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+        LoggerConfiguration loggerConfiguration = new();
         loggerConfiguration.ReadFrom.Configuration(configuration);
 
         return loggerConfiguration.CreateLogger();

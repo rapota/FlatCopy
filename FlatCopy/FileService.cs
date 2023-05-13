@@ -95,7 +95,7 @@ public class FileService
 
     private static void DeleteFileInternal(string filePath)
     {
-        FileInfo fileInfo = new FileInfo(filePath);
+        FileInfo fileInfo = new(filePath);
         if (fileInfo.IsReadOnly)
         {
             fileInfo.IsReadOnly = false;

@@ -1,3 +1,3 @@
-dotnet publish FlatCopy --configuration Release --output FlatCopyApp
+dotnet publish FlatCopy --self-contained --configuration Release --output FlatCopyApp
 
 PAUSE

@@ -1,4 +1,6 @@
-﻿namespace FlatCopy.Settings;
+﻿// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+// ReSharper disable CollectionNeverUpdated.Global
+namespace FlatCopy.Settings;
 
 public class CopyOptions
 {

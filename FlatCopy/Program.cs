@@ -10,7 +10,7 @@ Logger logger = ProgramExtensions.CreateLogger(configuration);
 
 ServiceCollection services = new ServiceCollection();
 services
-    .Configure<CopyOptions>(configuration.GetSection("Options"))
+    .Configure<CopyOptions>(options => configuration.GetSection("Options").Bind(options))
     .AddLogging(configure => configure.AddSerilog(logger, true))
     .AddSingleton<FileService>()
     .AddSingleton<Application>();

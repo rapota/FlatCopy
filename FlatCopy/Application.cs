@@ -100,10 +100,10 @@ public class Application
                     : x + Path.DirectorySeparatorChar)
             .ToList();
 
-        List<string> result = new List<string>(100000);
+        List<string> result = new(100000);
         foreach (string sourceFolder in _options.SourceFolders)
         {
-            using IDisposable scope = _logger.BeginScope(sourceFolder);
+            using IDisposable? scope = _logger.BeginScope(sourceFolder);
 
             string[] copiedFiles = CopyFolder(sourceFolder, skipExtensions, skipFolders);
             _logger.LogInformation("Copied {count} files.", copiedFiles.LongLength);
