@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Serilog;
-using Serilog.Core;
 
 namespace FlatCopy;
 
@@ -11,12 +9,4 @@ internal static class ProgramExtensions
             .AddJsonFile("appsettings.json")
             .AddCommandLine(args)
             .Build();
-
-    public static Logger CreateLogger(IConfiguration configuration)
-    {
-        LoggerConfiguration loggerConfiguration = new();
-        loggerConfiguration.ReadFrom.Configuration(configuration);
-
-        return loggerConfiguration.CreateLogger();
-    }
 }

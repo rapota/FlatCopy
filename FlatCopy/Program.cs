@@ -3,15 +3,19 @@ using FlatCopy.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Serilog.Core;
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithThreadId()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] [{ThreadId}] ({Scope}) {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
 
 IConfigurationRoot configuration = ProgramExtensions.BuildConfiguration(args);
-Logger logger = ProgramExtensions.CreateLogger(configuration);
+IConfigurationSection optionsSection = configuration.GetSection("Options");
 
-ServiceCollection services = new ServiceCollection();
+IServiceCollection services = new ServiceCollection();
 services
-    .Configure<CopyOptions>(options => configuration.GetSection("Options").Bind(options))
-    .AddLogging(configure => configure.AddSerilog(logger, true))
+    .Configure<CopyOptions>(optionsSection)
+    .AddLogging(configure => configure.AddSerilog(Log.Logger, true))
     .AddSingleton<FileService>()
     .AddSingleton<Application>();
 
