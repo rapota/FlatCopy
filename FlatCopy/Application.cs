@@ -85,7 +85,14 @@ public class Application
 
     private List<string> CopyFiles()
     {
-        _logger.LogInformation("Source folders: {folders}", string.Join(';', _options.SourceFolders));
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("{count} source folders to copy.", _options.SourceFolders.Count);
+            for (int i = 0; i < _options.SourceFolders.Count; i++)
+            {
+                _logger.LogInformation("Source folder #{i}: {folders}", i + 1, _options.SourceFolders[i]);
+            }
+        }
 
         if (!Directory.Exists(_options.TargetFolder))
         {
