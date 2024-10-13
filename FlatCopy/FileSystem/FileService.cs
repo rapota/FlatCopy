@@ -1,7 +1,7 @@
 ﻿using FlatCopy.Settings;
 using Microsoft.Extensions.Logging;
 
-namespace FlatCopy;
+namespace FlatCopy.FileSystem;
 
 internal sealed class FileService(ILogger<FileService> _logger) : IFileService
 {
@@ -84,7 +84,7 @@ internal sealed class FileService(ILogger<FileService> _logger) : IFileService
     {
         if (createHardLinks)
         {
-            FileManagementFunctions.CreateHardLink(destFileName, sourceFileName);
+            FileSystemFunctions.CreateHardLink(destFileName, sourceFileName);
         }
         else
         {

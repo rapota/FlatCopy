@@ -1,4 +1,5 @@
 ﻿using FlatCopy;
+using FlatCopy.FileSystem;
 using FlatCopy.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ IServiceCollection services = new ServiceCollection();
 services
     .Configure<CopyOptions>(optionsSection)
     .AddLogging(configure => configure.AddSerilog(logger, true))
+    .AddSingleton<IFileSystemApi, FileSystemApi>()
     .AddSingleton<IFileService, FileService>()
     .AddSingleton<CopyService>()
     .AddSingleton<Application>();

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using FlatCopy.FileSystem;
 using FlatCopy.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

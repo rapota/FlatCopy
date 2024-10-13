@@ -1,6 +1,6 @@
 ﻿using FlatCopy.Settings;
 
-namespace FlatCopy;
+namespace FlatCopy.FileSystem;
 
 public interface IFileService
 {
