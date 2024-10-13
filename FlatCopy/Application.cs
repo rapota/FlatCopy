@@ -9,9 +9,9 @@ public class Application
 {
     private readonly ILogger<Application> _logger;
     private readonly CopyOptions _options;
-    private readonly FileService _fileService;
+    private readonly IFileService _fileService;
 
-    public Application(ILogger<Application> logger, IOptions<CopyOptions> options, FileService fileService)
+    public Application(ILogger<Application> logger, IOptions<CopyOptions> options, IFileService fileService)
     {
         _logger = logger;
         _options = options.Value;

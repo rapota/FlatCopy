@@ -17,7 +17,8 @@ IServiceCollection services = new ServiceCollection();
 services
     .Configure<CopyOptions>(optionsSection)
     .AddLogging(configure => configure.AddSerilog(logger, true))
-    .AddSingleton<FileService>()
+    .AddSingleton<IFileService, FileService>()
+    .AddSingleton<CopyService>()
     .AddSingleton<Application>();
 
 using ServiceProvider provider = services.BuildServiceProvider(true);

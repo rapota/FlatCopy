@@ -3,14 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace FlatCopy;
 
-public class FileService
+internal sealed class FileService(ILogger<FileService> _logger) : IFileService
 {
-    private readonly ILogger<FileService> _logger;
+    public bool DirectoryExists(string path) =>
+        Directory.Exists(path);
 
-    public FileService(ILogger<FileService> logger)
-    {
-        _logger = logger;
-    }
+    public IEnumerable<string> EnumerateFiles(string path, string searchPattern) =>
+        Directory.EnumerateFiles(path, searchPattern, SearchOption.AllDirectories);
 
     public void Copy(string sourceFileName, string destFileName, OverwriteOption overwrite, bool createHardLinks)
     {
