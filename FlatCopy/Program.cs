@@ -19,6 +19,7 @@ services
     .Configure<CopyOptions>(optionsSection)
     .AddLogging(configure => configure.AddSerilog(logger, true))
     .AddSingleton<IFileSystemApi, FileSystemApi>()
+    .AddSingleton<IFileCopyService, FileCopyService>()
     .AddSingleton<IFileService, FileService>()
     .AddSingleton<CopyService>()
     .AddSingleton<Application>();
