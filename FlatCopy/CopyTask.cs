@@ -5,7 +5,7 @@ namespace FlatCopy;
 public sealed class CopyTask
 {
     public string Name { get; }
-    
+
     public string SourceFolder { get; }
 
     public string SearchPattern { get; }

@@ -6,6 +6,9 @@ namespace FlatCopy;
 
 public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileCopyService> _logger) : IFileCopyService
 {
+    public void CopyFile(string sourceFile, string destFileName, CopyParams copyParams) =>
+        CopyFile(sourceFile, destFileName, copyParams.CreateHardLinks, copyParams.Overwrite);
+
     public void CopyFile(string sourceFile, string destFileName, bool createHardLinks, OverwriteOption overwrite)
     {
         ArgumentNullException.ThrowIfNull(sourceFile);

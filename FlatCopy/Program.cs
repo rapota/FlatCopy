@@ -20,8 +20,10 @@ services
     .AddLogging(configure => configure.AddSerilog(logger, true))
     .AddSingleton<IFileSystemApi, FileSystemApi>()
     .AddSingleton<IFileCopyService, FileCopyService>()
+    .AddSingleton<IDirectoryScannerService, DirectoryScannerService>()
+    .AddSingleton<IDirectoryCopyService, DirectoryCopyService>()
     .AddSingleton<IFileService, FileService>()
-    .AddSingleton<CopyService>()
+    .AddSingleton<DirectoryScannerService>()
     .AddSingleton<Application>();
 
 using ServiceProvider provider = services.BuildServiceProvider(true);
