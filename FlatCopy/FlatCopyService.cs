@@ -1,33 +1,25 @@
-﻿namespace FlatCopy;
+﻿using FlatCopy.FileSystem;
+using Microsoft.Extensions.Logging;
 
-public record FlatCopyParams(string Name, CopyParams CopyParams, SearchParams SearchParams, string[] SubFoldersOnly, string[] SkipSubFolders, string DestDirectory);
+namespace FlatCopy;
 
-public sealed class FlatCopyService(IDirectoryCopyService _directoryCopyService)
+public sealed class FlatCopyService(IDirectoryCopyService _directoryCopyService, IFileSystemApi _fileSystemApi, ILogger<FlatCopyService> _logger) : IFlatCopyService
 {
     public string[] FlatCopy(FlatCopyParams flatCopyParams)
     {
+        if (!_fileSystemApi.DirectoryExists(flatCopyParams.SearchParams.SourceFolder))
+        {
+            _logger.LogWarning("Directory not found: {directory}", flatCopyParams.SearchParams.SourceFolder);
+            return [];
+        }
+
+        if (!_fileSystemApi.DirectoryExists(flatCopyParams.DestDirectory))
+        {
+            _fileSystemApi.CreateDirectory(flatCopyParams.DestDirectory);
+            _logger.LogInformation("Created destination directory: {directory}", flatCopyParams.DestDirectory);
+        }
+
         DirectoryCopyParams directoryCopyParams = new DirectoryCopyParams(flatCopyParams.SearchParams, flatCopyParams.CopyParams, flatCopyParams.DestDirectory);
-
-        if (flatCopyParams.SubFoldersOnly.Length > 0)
-        {
-            return CopySubFoldersOnly(flatCopyParams.Name, directoryCopyParams, flatCopyParams.SubFoldersOnly);
-        }
-
-        if (flatCopyParams.SkipSubFolders.Length > 0)
-        {
-            return CopySkipSubFolders(flatCopyParams.Name, directoryCopyParams, flatCopyParams.SkipSubFolders);
-        }
-
         return _directoryCopyService.CopyDirectory(directoryCopyParams, flatCopyParams.Name);
-    }
-
-    private string[] CopySubFoldersOnly(string name, DirectoryCopyParams directoryCopyParams, string[] subFoldersOnly)
-    {
-        return [];
-    }
-    
-    private string[] CopySkipSubFolders(string name, DirectoryCopyParams directoryCopyParams, string[] skipSubFolders)
-    {
-        return [];
     }
 }

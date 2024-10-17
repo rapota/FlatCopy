@@ -11,12 +11,14 @@ public class Application
     private readonly ILogger<Application> _logger;
     private readonly CopyOptions _options;
     private readonly IFileService _fileService;
+    private readonly IFlatCopyService _flatCopyService;
 
-    public Application(ILogger<Application> logger, IOptions<CopyOptions> options, IFileService fileService)
+    public Application(ILogger<Application> logger, IOptions<CopyOptions> options, IFileService fileService, IFlatCopyService flatCopyService)
     {
         _logger = logger;
         _options = options.Value;
         _fileService = fileService;
+        _flatCopyService = flatCopyService;
     }
 
     public void Run()
@@ -84,14 +86,40 @@ public class Application
                 .ToArray();
     }
 
+    private static List<FlatCopyParams> BuildTasks(CopyOptions copyOptions)
+    {
+        List<FlatCopyParams> result = new();
+        foreach (KeyValuePair<string, CopySource> copySource in copyOptions.Sources)
+        {
+            FlatCopyParams flatCopyParams = FlatCopyParamsHelper.ToFlatCopyParams(copySource.Key, copyOptions, copySource.Value);
+            result.Add(flatCopyParams);
+        }
+
+        CopyParams copyParams = new(copyOptions.CreateHardLinks, copyOptions.Overwrite);
+        foreach (string sourceFolder in copyOptions.SourceFolders)
+        {
+            SearchParams searchParams = new(sourceFolder, copyOptions.SearchPattern, copyOptions.SkipExtensions, [], []);
+
+            string path = Path.TrimEndingDirectorySeparator(sourceFolder);
+            string fileName = Path.GetFileName(path);
+            FlatCopyParams flatCopyParams = new(fileName, copyParams, searchParams, copyOptions.TargetFolder);
+
+            result.Add(flatCopyParams);
+        }
+
+        return result;
+    }
+
     private List<string> CopyFiles()
     {
+        List<FlatCopyParams> flatCopyParamsList = BuildTasks(_options);
+
         if (_logger.IsEnabled(LogLevel.Information))
         {
-            _logger.LogInformation("{count} source folders to copy.", _options.SourceFolders.Count);
-            for (int i = 0; i < _options.SourceFolders.Count; i++)
+            _logger.LogInformation("{count} source folders to copy.", flatCopyParamsList.Count);
+            for (int i = 0; i < flatCopyParamsList.Count; i++)
             {
-                _logger.LogInformation("Source folder #{i}: {folders}", i + 1, _options.SourceFolders[i]);
+                _logger.LogInformation("Source folder #{i}: {folders}", i + 1, flatCopyParamsList[i].SearchParams.SourceFolder);
             }
         }
 

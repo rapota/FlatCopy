@@ -8,6 +8,8 @@ public interface IFileSystemApi
 
     bool DirectoryExists(string path);
 
+    void CreateDirectory(string path);
+
     FileInformation GetFileInformation(string path);
 
     IEnumerable<string> EnumerateFiles(string path, string searchPattern);

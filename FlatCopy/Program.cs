@@ -21,6 +21,7 @@ services
     .AddSingleton<IFileSystemApi, FileSystemApi>()
     .AddSingleton<IFileCopyService, FileCopyService>()
     .AddSingleton<IDirectoryScannerService, DirectoryScannerService>()
+    .AddSingleton<IFlatCopyService, FlatCopyService>()
     .AddSingleton<IDirectoryCopyService, DirectoryCopyService>()
     .AddSingleton<IFileService, FileService>()
     .AddSingleton<DirectoryScannerService>()

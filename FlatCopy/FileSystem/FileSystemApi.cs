@@ -9,6 +9,9 @@ internal sealed class FileSystemApi(ILogger<FileSystemApi> _logger) : IFileSyste
 
     public bool DirectoryExists(string path) =>
         Directory.Exists(path);
+    
+    public void CreateDirectory(string path) =>
+        Directory.CreateDirectory(path);
 
     public FileInformation GetFileInformation(string fileName)
     {
