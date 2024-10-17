@@ -3,7 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace FlatCopy;
 
-public sealed class FlatCopyService(IDirectoryCopyService _directoryCopyService, IFileSystemApi _fileSystemApi, ILogger<FlatCopyService> _logger) : IFlatCopyService
+public sealed class FlatCopyService(
+    IDirectoryCopyService _directoryCopyService,
+    IFileSystemApi _fileSystemApi,
+    ILogger<FlatCopyService> _logger)
+    : IFlatCopyService
 {
     public string[] FlatCopy(FlatCopyParams flatCopyParams)
     {
@@ -21,5 +25,22 @@ public sealed class FlatCopyService(IDirectoryCopyService _directoryCopyService,
 
         DirectoryCopyParams directoryCopyParams = new DirectoryCopyParams(flatCopyParams.SearchParams, flatCopyParams.CopyParams, flatCopyParams.DestDirectory);
         return _directoryCopyService.CopyDirectory(directoryCopyParams, flatCopyParams.Name);
+    }
+
+    public long DeleteExtraFiles(string path, IEnumerable<string> files)
+    {
+        HashSet<string> resultSet = files.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        long result = 0;
+        foreach (string filePath in _fileSystemApi.EnumerateFiles(path, "*.*")) // todo: remove SearchPattern
+        {
+            if (!resultSet.Contains(filePath))
+            {
+                _fileSystemApi.DeleteFile(filePath);
+                result++;
+            }
+        }
+
+        return result;
     }
 }

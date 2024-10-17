@@ -5,4 +5,6 @@ public record FlatCopyParams(string Name, CopyParams CopyParams, SearchParams Se
 public interface IFlatCopyService
 {
     string[] FlatCopy(FlatCopyParams flatCopyParams);
+
+    long DeleteExtraFiles(string path, IEnumerable<string> files);
 }

@@ -40,7 +40,7 @@ public sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi) : IDi
                 continue;
             }
 
-            if (skipSubFolders.Length > 0 && !IsSkipFolder(sourceItem.SourcePath))
+            if (skipSubFolders.Length > 0 && IsSkipFolder(sourceItem.SourcePath))
             {
                 continue;
             }
