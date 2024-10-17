@@ -6,5 +6,5 @@ public interface IFlatCopyService
 {
     string[] FlatCopy(FlatCopyParams flatCopyParams);
 
-    long DeleteExtraFiles(string path, IEnumerable<string> files);
+    long DeleteExtraFiles(IEnumerable<string> files, string path, string searchPattern);
 }

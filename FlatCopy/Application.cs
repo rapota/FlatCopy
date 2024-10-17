@@ -27,7 +27,7 @@ public class Application(
         sw.Stop();
 
         Stopwatch swd = Stopwatch.StartNew();
-        long count = _flatCopyService.DeleteExtraFiles(_options.Value.TargetFolder, copiedFiles);
+        long count = _flatCopyService.DeleteExtraFiles(copiedFiles, _options.Value.TargetFolder, _options.Value.SearchPattern);
         swd.Stop();
 
         _logger.LogInformation("Processed {count} files for {elapsed}", copiedFiles.Count, sw.Elapsed);

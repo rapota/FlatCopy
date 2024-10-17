@@ -27,12 +27,12 @@ public sealed class FlatCopyService(
         return _directoryCopyService.CopyDirectory(directoryCopyParams, flatCopyParams.Name);
     }
 
-    public long DeleteExtraFiles(string path, IEnumerable<string> files)
+    public long DeleteExtraFiles(IEnumerable<string> files, string path, string searchPattern)
     {
         HashSet<string> resultSet = files.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         long result = 0;
-        foreach (string filePath in _fileSystemApi.EnumerateFiles(path, "*.*")) // todo: remove SearchPattern
+        foreach (string filePath in _fileSystemApi.EnumerateFiles(path, searchPattern))
         {
             if (!resultSet.Contains(filePath))
             {
