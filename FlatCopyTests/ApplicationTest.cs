@@ -1,16 +1,44 @@
 using FlatCopy;
-using Xunit;
+using FlatCopy.Settings;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FlatCopyTests;
 
 public class ApplicationTest
 {
-    [Theory]
-    [InlineData(@"C:\a\f.ext", @"D:\a_f.ext")]
-    [InlineData(@"C:\a\b\f.ext", @"D:\a_b_f.ext")]
-    public void CalculateTargetFile(string filePath, string expectedFileName)
+    private readonly Mock<IOptions<CopyOptions>> _copyOptionsMock;
+    private readonly Mock<IFlatCopyService> _flatCopyMock;
+    private readonly Application _application;
+
+    public ApplicationTest()
     {
-        string calculateTargetFile = Application.CalculateTargetFile(filePath, @"C:\a\", @"D:");
-        Assert.Equal(expectedFileName, calculateTargetFile);
+        _copyOptionsMock = new Mock<IOptions<CopyOptions>>();
+        _flatCopyMock = new Mock<IFlatCopyService>();
+        _application = new Application(_copyOptionsMock.Object, _flatCopyMock.Object, Mock.Of<ILogger<Application>>());
+    }
+
+    [Fact]
+    public void Test()
+    {
+        CopyOptions copyOptions = new()
+        {
+            TargetFolder = @"C:\out",
+            SourceFolders = [@"C:\inp1", @"C:\inp2"],
+            Sources =
+            {
+                {"Name", new CopySource
+                {
+                    SourceFolder = @"C:\inp11"
+                }}
+            }
+
+        };
+
+        _copyOptionsMock.Setup(x => x.Value).Returns(copyOptions);
+
+        _flatCopyMock.Setup(x => x.FlatCopy(It.IsAny<FlatCopyParams>())).Returns(["result"]);
+
+        _application.Run();
     }
 }
