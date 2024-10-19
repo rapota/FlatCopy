@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Text;
 
 namespace FlatCopy;
 
@@ -16,9 +17,28 @@ public sealed class Application(
         if (_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation("{count} source folders to copy.", flatCopyParamsList.Count);
-            for (int i = 0; i < flatCopyParamsList.Count; i++)
+
+            int i = 0;
+            foreach (FlatCopyParams flatCopyParams in flatCopyParamsList)
             {
-                _logger.LogInformation("Source folder #{i}: {folders}", i + 1, flatCopyParamsList[i].SearchParams.SourceFolder);
+                i++;
+
+                SearchParams searchParams = flatCopyParams.SearchParams;
+                StringBuilder sb = new(searchParams.SourceFolder);
+
+                if (searchParams.SkipSubFolders.Length > 0)
+                {
+                    sb.Append(" ");
+                    sb.AppendJoin(' ', searchParams.SkipSubFolders.Select(x => "-" + x));
+                }
+
+                if (searchParams.SubFoldersOnly.Length > 0)
+                {
+                    sb.Append(" ");
+                    sb.AppendJoin(' ', searchParams.SubFoldersOnly.Select(x => "+" + x));
+                }
+
+                _logger.LogInformation("Source folder #{i}: {folders}", i, sb.ToString());
             }
         }
 
