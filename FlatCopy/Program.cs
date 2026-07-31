@@ -7,8 +7,7 @@ using Serilog;
 using Serilog.Core;
 
 Logger logger = new LoggerConfiguration()
-    .Enrich.WithThreadId()
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] [{ThreadId}] ({Scope}) {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] ({Scope}) {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
 IConfigurationRoot configuration = ProgramExtensions.BuildConfiguration(args);
@@ -26,5 +25,5 @@ services
     .AddSingleton<Application>();
 
 using ServiceProvider provider = services.BuildServiceProvider(true);
-Application? application = provider.GetService<Application>();
-application?.Run();
+Application application = provider.GetRequiredService<Application>();
+application.Run();

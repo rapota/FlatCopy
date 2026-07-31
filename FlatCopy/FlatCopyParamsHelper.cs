@@ -1,5 +1,4 @@
 ﻿using FlatCopy.Settings;
-using System.Xml.Linq;
 
 namespace FlatCopy;
 
