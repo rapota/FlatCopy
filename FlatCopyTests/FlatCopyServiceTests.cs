@@ -29,7 +29,7 @@ public class FlatCopyServiceTests
 
         List<string> copy = _flatCopyService.FlatCopy(flatCopyParams);
 
-        copy.Should().BeEmpty();
+        Assert.Empty(copy);
 
         DirectoryCopyParams directoryCopyParams = new DirectoryCopyParams(flatCopyParams.SearchParams, flatCopyParams.CopyParams, flatCopyParams.DestDirectory);
         _directoryCopyMock.Verify(x => x.CopyDirectory(directoryCopyParams), Times.Never);
@@ -50,7 +50,8 @@ public class FlatCopyServiceTests
 
         List<string> copy = _flatCopyService.FlatCopy(flatCopyParams);
 
-        copy.Should().BeEquivalentTo([@"C:\out\file.txt"]);
+        string[] expected = [@"C:\out\file.txt"];
+        Assert.Equivalent(expected, copy);
         _fileSystemMock.Verify(x => x.CreateDirectory(@"C:\out"), Times.Once);
         _directoryCopyMock.Verify(x => x.CopyDirectory(directoryCopyParams, "Name"), Times.Once);
     }
@@ -70,7 +71,8 @@ public class FlatCopyServiceTests
 
         List<string> copy = _flatCopyService.FlatCopy(flatCopyParams);
 
-        copy.Should().BeEquivalentTo([@"C:\out\file.txt"]);
+        string[] expected = [@"C:\out\file.txt"];
+        Assert.Equivalent(expected, copy);
     }
 
     [Fact]

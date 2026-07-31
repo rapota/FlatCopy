@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FlatCopy/FlatCopy.csproj" />
+  <Project Path="FlatCopyTests/FlatCopyTests.csproj" />
+</Solution>

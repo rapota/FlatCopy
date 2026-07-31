@@ -35,10 +35,12 @@ public class DirectoryScannerServiceTests
         IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
         List<SourceItem> sourceItems = result.ToList();
 
-        sourceItems.Should().BeEquivalentTo([
+        SourceItem[] expected =
+        [
             new SourceItem(@"C:\inp\file1.txt", "file1.txt"),
             new SourceItem(@"C:\inp\sub\file2.txt", @"sub\file2.txt")
-        ]);
+        ];
+        Assert.Equivalent(expected, sourceItems);
     }
 
     [Fact]
@@ -64,10 +66,13 @@ public class DirectoryScannerServiceTests
         IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
         List<SourceItem> sourceItems = result.ToList();
 
-        sourceItems.Should().BeEquivalentTo([
+        SourceItem[] expected =
+        [
             new SourceItem(@"C:\inp\file1.txt", "file1.txt"),
             new SourceItem(@"C:\inp\file3.txt", "file3.txt")
-        ]);
+        ];
+
+        Assert.Equivalent(expected, sourceItems);
     }
 
     [Fact]
@@ -95,11 +100,14 @@ public class DirectoryScannerServiceTests
         IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
         List<SourceItem> sourceItems = result.ToList();
 
-        sourceItems.Should().BeEquivalentTo([
+        SourceItem[] expected =
+        [
             new SourceItem(@"C:\inp\sub1\file1.txt", @"sub1\file1.txt"),
             new SourceItem(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
             new SourceItem(@"C:\inp\sub3\sub31\file4.txt", @"sub3\sub31\file4.txt")
-        ]);
+        ];
+
+        Assert.Equivalent(expected, sourceItems);
     }
 
     [Fact]
@@ -127,11 +135,13 @@ public class DirectoryScannerServiceTests
         IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
         List<SourceItem> sourceItems = result.ToList();
 
-        sourceItems.Should().BeEquivalentTo([
+        SourceItem[] expected =
+        [
             new SourceItem(@"C:\inp\file0.txt", "file0.txt"),
             new SourceItem(@"C:\inp\sub1file0.txt", "sub1file0.txt"),
             new SourceItem(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
             new SourceItem(@"C:\inp\sub3\file3.txt", @"sub3\file3.txt")
-        ]);
+        ];
+        Assert.Equivalent(expected, sourceItems);
     }
 }

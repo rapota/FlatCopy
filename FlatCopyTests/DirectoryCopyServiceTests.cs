@@ -39,9 +39,10 @@ public class DirectoryCopyServiceTests
 
         List<string> copiedFiles = _directoryCopyService.CopyDirectory(directoryCopyParams, "prefix");
 
-        copiedFiles.Should().BeEquivalentTo([
+        string[] expected = [
             @"C:\out\prefix_file0.txt",
-            @"C:\out\prefix_sub_file1.txt",
-        ]);
+            @"C:\out\prefix_sub_file1.txt"];
+
+        Assert.Equivalent(expected, copiedFiles);
     }
 }
