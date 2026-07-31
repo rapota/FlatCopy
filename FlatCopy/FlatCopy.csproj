@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot>True</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
