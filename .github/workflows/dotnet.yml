@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore FlatCopy.slnx
     - name: Test
-      run: dotnet test --no-build --verbosity normal FlatCopy.slnx
+      run: dotnet test --no-build --solution FlatCopy.slnx
     - name: Publish win-x64
       run: dotnet publish FlatCopy\FlatCopy.csproj --configuration Release --output flatcopy-win-x64 --runtime win-x64
     - name: Upload win-x64
