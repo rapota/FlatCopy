@@ -1,9 +1,7 @@
-﻿using FlatCopy;
-using FlatCopy.FileSystem;
-using FlatCopy.Settings;
+﻿using FlatCopy.FileSystemServices.FileSystem;
 using Microsoft.Extensions.Logging;
 
-namespace FlatCopyTests;
+namespace FlatCopy.FileSystemServices.Tests;
 
 public class FileCopyServiceTests
 {
@@ -21,7 +19,7 @@ public class FileCopyServiceTests
     {
         _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(false);
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.No));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.No));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Once);
     }
@@ -31,7 +29,7 @@ public class FileCopyServiceTests
     {
         _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(true);
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.No));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.No));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Never);
     }
@@ -41,7 +39,7 @@ public class FileCopyServiceTests
     {
         _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(false);
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.Newer));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Once);
     }
@@ -53,7 +51,7 @@ public class FileCopyServiceTests
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(DateTime.UtcNow.AddMinutes(1), 1));
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(DateTime.UtcNow, 1));
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.Newer));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Once);
     }
@@ -66,7 +64,7 @@ public class FileCopyServiceTests
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(dt, 1));
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(dt, 1));
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.Newer));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Never);
     }
@@ -79,7 +77,7 @@ public class FileCopyServiceTests
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(dt, 1));
         _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(dt, 1));
 
-        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteOption.Yes));
+        _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Yes));
 
         _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Once);
     }

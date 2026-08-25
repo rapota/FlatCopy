@@ -1,7 +1,7 @@
-﻿using FlatCopy;
-using FlatCopy.FileSystem;
+﻿using FlatCopy.FileSystemServices.FileSystem;
+using Microsoft.Extensions.Logging;
 
-namespace FlatCopyTests;
+namespace FlatCopy.FileSystemServices.Tests;
 
 public class DirectoryScannerServiceTests
 {
@@ -11,7 +11,7 @@ public class DirectoryScannerServiceTests
     public DirectoryScannerServiceTests()
     {
         _fileSystemMock = new Mock<IFileSystemApi>();
-        _directoryScannerService = new DirectoryScannerService(_fileSystemMock.Object);
+        _directoryScannerService = new DirectoryScannerService(_fileSystemMock.Object, Mock.Of<ILogger<DirectoryScannerService>>());
     }
 
     [Fact]

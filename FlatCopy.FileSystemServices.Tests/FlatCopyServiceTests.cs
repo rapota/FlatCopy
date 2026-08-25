@@ -1,9 +1,7 @@
-﻿using FlatCopy;
-using FlatCopy.FileSystem;
-using FlatCopy.Settings;
+﻿using FlatCopy.FileSystemServices.FileSystem;
 using Microsoft.Extensions.Logging;
 
-namespace FlatCopyTests;
+namespace FlatCopy.FileSystemServices.Tests;
 
 public class FlatCopyServiceTests
 {
@@ -21,7 +19,7 @@ public class FlatCopyServiceTests
     [Fact]
     public void CopyFromMissingDirectory()
     {
-        CopyParams copyParams = new(false, OverwriteOption.No);
+        CopyParams copyParams = new(false, OverwriteParams.No);
         SearchParams searchParams = new(@"C:\inp", "*", [], [], []);
         FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
 
@@ -38,7 +36,7 @@ public class FlatCopyServiceTests
     [Fact]
     public void CopyToMissingDirectoryTest()
     {
-        CopyParams copyParams = new(false, OverwriteOption.No);
+        CopyParams copyParams = new(false, OverwriteParams.No);
         SearchParams searchParams = new(@"C:\inp", "*", [], [], []);
         FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
 
@@ -59,7 +57,7 @@ public class FlatCopyServiceTests
     [Fact]
     public void CopyDirectoryTest()
     {
-        CopyParams copyParams = new(false, OverwriteOption.No);
+        CopyParams copyParams = new(false, OverwriteParams.No);
         SearchParams searchParams = new(@"C:\inp", "*", [], [], []);
         FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
 

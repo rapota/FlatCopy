@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace FlatCopy.FileSystem;
+namespace FlatCopy.FileSystemServices.FileSystem;
 
 internal sealed class FileSystemApi(ILogger<FileSystemApi> _logger) : IFileSystemApi
 {
@@ -46,6 +46,7 @@ internal sealed class FileSystemApi(ILogger<FileSystemApi> _logger) : IFileSyste
         if (fileInfo.IsReadOnly)
         {
             fileInfo.IsReadOnly = false;
+            _logger.LogInformation("Removed read-only attribute from file at {path}", filePath);
         }
 
         fileInfo.Delete();

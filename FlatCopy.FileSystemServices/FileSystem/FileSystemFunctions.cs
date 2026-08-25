@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace FlatCopy.FileSystem;
+namespace FlatCopy.FileSystemServices.FileSystem;
 
 internal static class FileSystemFunctions
 {

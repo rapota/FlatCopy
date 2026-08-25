@@ -1,4 +1,4 @@
-﻿namespace FlatCopy;
+﻿namespace FlatCopy.FileSystemServices;
 
 public record FlatCopyParams(string Name, CopyParams CopyParams, SearchParams SearchParams, string DestDirectory);
 

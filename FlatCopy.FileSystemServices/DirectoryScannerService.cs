@@ -1,8 +1,9 @@
-﻿using FlatCopy.FileSystem;
+﻿using FlatCopy.FileSystemServices.FileSystem;
+using Microsoft.Extensions.Logging;
 
-namespace FlatCopy;
+namespace FlatCopy.FileSystemServices;
 
-public sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi) : IDirectoryScannerService
+internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILogger<DirectoryScannerService> _logger) : IDirectoryScannerService
 {
     public IEnumerable<SourceItem> EnumerateFiles(SearchParams searchParams) =>
         searchParams.SubFoldersOnly.Length == 0 && searchParams.SkipSubFolders.Length == 0
@@ -63,6 +64,7 @@ public sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi) : IDi
             string extension = Path.GetExtension(filePath);
             if (se.Contains(extension))
             {
+                _logger.LogInformation("Skipping file {filePath} with extension {extension}", filePath, extension);
                 continue;
             }
 

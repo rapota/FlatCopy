@@ -1,37 +1,47 @@
-﻿using FlatCopy.Settings;
+﻿using FlatCopy.FileSystemServices;
+using FlatCopy.Settings;
 
 namespace FlatCopy;
 
 public static class FlatCopyParamsHelper
 {
-    public static FlatCopyParams ToFlatCopyParams(string name, CopyOptions copyOptions, CopySource copySource)
+    public static OverwriteParams ToOverwriteParams(OverwriteSettings overwrite) =>
+        overwrite switch
+        {
+            OverwriteSettings.No => OverwriteParams.No,
+            OverwriteSettings.Newer => OverwriteParams.Newer,
+            OverwriteSettings.Yes => OverwriteParams.Yes,
+            _ => throw new ArgumentOutOfRangeException(nameof(overwrite), overwrite, null)
+        };
+
+    public static FlatCopyParams ToFlatCopyParams(string name, CopySettings copySettings, SourceSettings sourceSettings)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentException.ThrowIfNullOrEmpty(copyOptions.TargetFolder);
+        ArgumentException.ThrowIfNullOrEmpty(copySettings.TargetFolder);
 
         return new FlatCopyParams(
             name,
-            ToCopyParams(copyOptions, copySource),
-            ToSearchParams(copyOptions, copySource),
-            copyOptions.TargetFolder);
+            ToCopyParams(copySettings, sourceSettings),
+            ToSearchParams(copySettings, sourceSettings),
+            copySettings.TargetFolder);
     }
 
-    private static SearchParams ToSearchParams(CopyOptions copyOptions, CopySource copySource)
+    private static SearchParams ToSearchParams(CopySettings copySettings, SourceSettings sourceSettings)
     {
-        ArgumentException.ThrowIfNullOrEmpty(copySource.SourceFolder);
-        ArgumentNullException.ThrowIfNull(copyOptions.SearchPattern);
-        ArgumentNullException.ThrowIfNull(copyOptions.SkipExtensions);
+        ArgumentException.ThrowIfNullOrEmpty(sourceSettings.SourceFolder);
+        ArgumentNullException.ThrowIfNull(copySettings.SearchPattern);
+        ArgumentNullException.ThrowIfNull(copySettings.SkipExtensions);
 
         return new SearchParams(
-            copySource.SourceFolder,
-            copySource.SearchPattern ?? copyOptions.SearchPattern,
-            copySource.SkipExtensions ?? copyOptions.SkipExtensions,
-            copySource.SubFoldersOnly ?? [],
-            copySource.SkipSubFolders ?? []);
+            sourceSettings.SourceFolder,
+            sourceSettings.SearchPattern ?? copySettings.SearchPattern,
+            sourceSettings.SkipExtensions ?? copySettings.SkipExtensions,
+            sourceSettings.SubFoldersOnly ?? [],
+            sourceSettings.SkipSubFolders ?? []);
     }
 
-    private static CopyParams ToCopyParams(CopyOptions copyOptions, CopySource copySource) =>
+    private static CopyParams ToCopyParams(CopySettings copySettings, SourceSettings sourceSettings) =>
         new(
-            copySource.CreateHardLinks ?? copyOptions.CreateHardLinks,
-            copySource.Overwrite ?? copyOptions.Overwrite);
+            sourceSettings.CreateHardLinks ?? copySettings.CreateHardLinks,
+            ToOverwriteParams(sourceSettings.Overwrite ?? copySettings.Overwrite));
 }

@@ -1,6 +1,6 @@
 ﻿namespace FlatCopy.Settings;
 
-public sealed class CopySource
+public sealed class SourceSettings
 {
     public string SourceFolder { get; set; } = string.Empty;
 
@@ -8,7 +8,7 @@ public sealed class CopySource
 
     public string[]? SkipExtensions { get; set; }
 
-    public OverwriteOption? Overwrite { get; set; }
+    public OverwriteSettings? Overwrite { get; set; }
 
     public bool? CreateHardLinks { get; set; }
 

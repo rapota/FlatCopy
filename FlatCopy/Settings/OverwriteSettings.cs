@@ -1,6 +1,6 @@
 ﻿namespace FlatCopy.Settings;
 
-public enum OverwriteOption
+public enum OverwriteSettings
 {
     No,
     Newer,

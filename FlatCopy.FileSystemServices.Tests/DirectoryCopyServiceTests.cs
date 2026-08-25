@@ -1,7 +1,4 @@
-﻿using FlatCopy;
-using FlatCopy.Settings;
-
-namespace FlatCopyTests;
+﻿namespace FlatCopy.FileSystemServices.Tests;
 
 public class DirectoryCopyServiceTests
 {
@@ -32,7 +29,7 @@ public class DirectoryCopyServiceTests
             [],
             [],
             []);
-        CopyParams copyParams = new CopyParams(false, OverwriteOption.No);
+        CopyParams copyParams = new CopyParams(false, OverwriteParams.No);
         DirectoryCopyParams directoryCopyParams = new(searchParams, copyParams, @"C:\out");
 
         _directoryScannerServiceMock.Setup(x => x.EnumerateFiles(searchParams)).Returns(sourceItems);

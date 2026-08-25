@@ -1,6 +1,6 @@
-﻿namespace FlatCopy;
+﻿namespace FlatCopy.FileSystemServices;
 
-public sealed class DirectoryCopyService(IDirectoryScannerService _directoryScannerService, IFileCopyService _fileCopyService) : IDirectoryCopyService
+internal sealed class DirectoryCopyService(IDirectoryScannerService _directoryScannerService, IFileCopyService _fileCopyService) : IDirectoryCopyService
 {
     public List<string> CopyDirectory(DirectoryCopyParams directoryCopyParams, params string[] customPrefixes)
     {

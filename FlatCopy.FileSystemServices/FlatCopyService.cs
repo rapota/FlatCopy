@@ -1,9 +1,9 @@
-﻿using FlatCopy.FileSystem;
+﻿using FlatCopy.FileSystemServices.FileSystem;
 using Microsoft.Extensions.Logging;
 
-namespace FlatCopy;
+namespace FlatCopy.FileSystemServices;
 
-public sealed class FlatCopyService(
+internal sealed class FlatCopyService(
     IDirectoryCopyService _directoryCopyService,
     IFileSystemApi _fileSystemApi,
     ILogger<FlatCopyService> _logger)

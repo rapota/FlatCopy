@@ -1,4 +1,4 @@
-﻿namespace FlatCopy.FileSystem;
+﻿namespace FlatCopy.FileSystemServices.FileSystem;
 
 public record FileInformation(DateTime LastWriteTimeUtc, long Length);
 

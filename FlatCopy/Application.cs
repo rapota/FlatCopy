@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Text;
+using FlatCopy.FileSystemServices;
 
 namespace FlatCopy;
 
 public sealed class Application(
-    IOptions<CopyOptions> _options,
+    IOptions<CopySettings> _options,
     IFlatCopyService _flatCopyService,
     ILogger<Application> _logger)
 {
@@ -54,23 +55,23 @@ public sealed class Application(
         _logger.LogInformation("Deleted {count} extra files for {elapsed}", count, swd.Elapsed);
     }
 
-    private static List<FlatCopyParams> BuildTasks(CopyOptions copyOptions)
+    private static List<FlatCopyParams> BuildTasks(CopySettings copySettings)
     {
         List<FlatCopyParams> result = new();
-        foreach (KeyValuePair<string, CopySource> copySource in copyOptions.Sources)
+        foreach (KeyValuePair<string, SourceSettings> copySource in copySettings.Sources)
         {
-            FlatCopyParams flatCopyParams = FlatCopyParamsHelper.ToFlatCopyParams(copySource.Key, copyOptions, copySource.Value);
+            FlatCopyParams flatCopyParams = FlatCopyParamsHelper.ToFlatCopyParams(copySource.Key, copySettings, copySource.Value);
             result.Add(flatCopyParams);
         }
 
-        CopyParams copyParams = new(copyOptions.CreateHardLinks, copyOptions.Overwrite);
-        foreach (string sourceFolder in copyOptions.SourceFolders)
+        CopyParams copyParams = new(copySettings.CreateHardLinks, FlatCopyParamsHelper.ToOverwriteParams(copySettings.Overwrite));
+        foreach (string sourceFolder in copySettings.SourceFolders)
         {
-            SearchParams searchParams = new(sourceFolder, copyOptions.SearchPattern, copyOptions.SkipExtensions, [], []);
+            SearchParams searchParams = new(sourceFolder, copySettings.SearchPattern, copySettings.SkipExtensions, [], []);
 
             string path = Path.TrimEndingDirectorySeparator(sourceFolder);
             string fileName = Path.GetFileName(path);
-            FlatCopyParams flatCopyParams = new(fileName, copyParams, searchParams, copyOptions.TargetFolder);
+            FlatCopyParams flatCopyParams = new(fileName, copyParams, searchParams, copySettings.TargetFolder);
 
             result.Add(flatCopyParams);
         }

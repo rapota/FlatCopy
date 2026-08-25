@@ -1,5 +1,5 @@
 ﻿using FlatCopy;
-using FlatCopy.FileSystem;
+using FlatCopy.FileSystemServices;
 using FlatCopy.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,21 +7,17 @@ using Serilog;
 using Serilog.Core;
 
 Logger logger = new LoggerConfiguration()
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] ({Scope}) {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Scope} {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
 IConfigurationRoot configuration = ProgramExtensions.BuildConfiguration(args);
-IConfigurationSection optionsSection = configuration.GetSection("Options");
+IConfigurationSection optionsSection = configuration.GetSection("Settings");
 
 IServiceCollection services = new ServiceCollection();
 services
-    .Configure<CopyOptions>(optionsSection)
+    .Configure<CopySettings>(optionsSection)
     .AddLogging(configure => configure.AddSerilog(logger, true))
-    .AddSingleton<IFileSystemApi, FileSystemApi>()
-    .AddSingleton<IFileCopyService, FileCopyService>()
-    .AddSingleton<IDirectoryScannerService, DirectoryScannerService>()
-    .AddSingleton<IFlatCopyService, FlatCopyService>()
-    .AddSingleton<IDirectoryCopyService, DirectoryCopyService>()
+    .AddFileSystemServices()
     .AddSingleton<Application>();
 
 using ServiceProvider provider = services.BuildServiceProvider(true);

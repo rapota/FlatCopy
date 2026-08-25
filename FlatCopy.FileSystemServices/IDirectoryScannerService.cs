@@ -1,4 +1,4 @@
-﻿namespace FlatCopy;
+﻿namespace FlatCopy.FileSystemServices;
 
 public record SearchParams(string SourceFolder, string SearchPattern, string[] SkipExtensions, string[] SubFoldersOnly, string[] SkipSubFolders);
 

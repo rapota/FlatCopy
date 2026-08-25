@@ -1,15 +1,14 @@
-﻿using FlatCopy.FileSystem;
-using FlatCopy.Settings;
+﻿using FlatCopy.FileSystemServices.FileSystem;
 using Microsoft.Extensions.Logging;
 
-namespace FlatCopy;
+namespace FlatCopy.FileSystemServices;
 
-public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileCopyService> _logger) : IFileCopyService
+internal sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileCopyService> _logger) : IFileCopyService
 {
     public void CopyFile(string sourceFile, string destFileName, CopyParams copyParams) =>
         CopyFile(sourceFile, destFileName, copyParams.CreateHardLinks, copyParams.Overwrite);
 
-    private void CopyFile(string sourceFile, string destFileName, bool createHardLinks, OverwriteOption overwrite)
+    private void CopyFile(string sourceFile, string destFileName, bool createHardLinks, OverwriteParams overwrite)
     {
         if (createHardLinks)
         {
@@ -21,16 +20,16 @@ public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileC
         }
     }
 
-    private void CreateHardLink(string sourceFile, string destFileName, OverwriteOption overwrite)
+    private void CreateHardLink(string sourceFile, string destFileName, OverwriteParams overwrite)
     {
-        if (overwrite == OverwriteOption.No)
+        if (overwrite == OverwriteParams.No)
         {
             if (!_fileSystemApi.FileExists(destFileName))
             {
                 _fileSystemApi.CreateHardLink(destFileName, sourceFile);
             }
         }
-        else if (overwrite == OverwriteOption.Newer)
+        else if (overwrite == OverwriteParams.Newer)
         {
             if (_fileSystemApi.FileExists(destFileName))
             {
@@ -53,7 +52,7 @@ public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileC
                 _fileSystemApi.CreateHardLink(destFileName, sourceFile);
             }
         }
-        else if (overwrite == OverwriteOption.Yes)
+        else if (overwrite == OverwriteParams.Yes)
         {
             if (_fileSystemApi.FileExists(destFileName))
             {
@@ -64,16 +63,16 @@ public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileC
         }
     }
 
-    private void CopyFile(string sourceFile, string destFileName, OverwriteOption overwrite)
+    private void CopyFile(string sourceFile, string destFileName, OverwriteParams overwrite)
     {
-        if (overwrite == OverwriteOption.No)
+        if (overwrite == OverwriteParams.No)
         {
             if (!_fileSystemApi.FileExists(destFileName))
             {
                 _fileSystemApi.CopyFile(sourceFile, destFileName);
             }
         }
-        else if (overwrite == OverwriteOption.Newer)
+        else if (overwrite == OverwriteParams.Newer)
         {
             if (_fileSystemApi.FileExists(destFileName))
             {
@@ -95,7 +94,7 @@ public sealed class FileCopyService(IFileSystemApi _fileSystemApi, ILogger<FileC
                 _fileSystemApi.CopyFile(sourceFile, destFileName);
             }
         }
-        else if (overwrite == OverwriteOption.Yes)
+        else if (overwrite == OverwriteParams.Yes)
         {
             _fileSystemApi.CopyFile(sourceFile, destFileName, true);
         }
