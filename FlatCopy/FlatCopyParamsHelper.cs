@@ -33,9 +33,10 @@ public static class FlatCopyParamsHelper
         ArgumentNullException.ThrowIfNull(copySettings.SkipExtensions);
 
         return new SearchParams(
-            sourceSettings.SourceFolder,
-            sourceSettings.SearchPattern ?? copySettings.SearchPattern,
-            sourceSettings.SkipExtensions ?? copySettings.SkipExtensions,
+            new QueryParams(
+                sourceSettings.SourceFolder,
+                sourceSettings.SearchPattern ?? copySettings.SearchPattern),
+                sourceSettings.SkipExtensions ?? copySettings.SkipExtensions,
             sourceSettings.SubFoldersOnly ?? [],
             sourceSettings.SkipSubFolders ?? []);
     }

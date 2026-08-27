@@ -25,7 +25,7 @@ public sealed class Application(
                 i++;
 
                 SearchParams searchParams = flatCopyParams.SearchParams;
-                StringBuilder sb = new(searchParams.SourceFolder);
+                StringBuilder sb = new(searchParams.QueryParams.SearchPath);
 
                 if (searchParams.SkipSubFolders.Length > 0)
                 {
@@ -67,7 +67,11 @@ public sealed class Application(
         CopyParams copyParams = new(copySettings.CreateHardLinks, FlatCopyParamsHelper.ToOverwriteParams(copySettings.Overwrite));
         foreach (string sourceFolder in copySettings.SourceFolders)
         {
-            SearchParams searchParams = new(sourceFolder, copySettings.SearchPattern, copySettings.SkipExtensions, [], []);
+            SearchParams searchParams = new(
+                new QueryParams(sourceFolder, copySettings.SearchPattern),
+                copySettings.SkipExtensions,
+                [],
+                []);
 
             string path = Path.TrimEndingDirectorySeparator(sourceFolder);
             string fileName = Path.GetFileName(path);
@@ -84,7 +88,7 @@ public sealed class Application(
         List<string> result = new(100000);
         foreach (FlatCopyParams flatCopyParams in flatCopyParamsList)
         {
-            using IDisposable? scope = _logger.BeginScope(flatCopyParams.SearchParams.SourceFolder);
+            using IDisposable? scope = _logger.BeginScope(flatCopyParams.SearchParams.QueryParams.SearchPath);
 
             List<string> flatCopy = _flatCopyService.FlatCopy(flatCopyParams);
             _logger.LogInformation("Copied {count} files.", flatCopy.Count);

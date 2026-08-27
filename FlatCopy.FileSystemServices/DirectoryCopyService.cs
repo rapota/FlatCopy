@@ -9,12 +9,12 @@ internal sealed class DirectoryCopyService(IDirectoryScannerService _directorySc
             : string.Empty;
 
         List<string> result = new List<string>(5000);
-        foreach (SourceItem sourceItem in _directoryScannerService.EnumerateFiles(directoryCopyParams.SearchParams))
+        foreach (FileItem sourceItem in _directoryScannerService.EnumerateFiles(directoryCopyParams.SearchParams))
         {
             string fileName = sourceItem.RelativePath.Replace(Path.DirectorySeparatorChar, '_');
             string destFileName = Path.Combine(directoryCopyParams.DestDirectory, customPrefix + fileName);
 
-            _fileCopyService.CopyFile(sourceItem.SourcePath, destFileName, directoryCopyParams.CopyParams);
+            _fileCopyService.CopyFile(sourceItem.FullPath, destFileName, directoryCopyParams.CopyParams);
 
             result.Add(destFileName);
         }

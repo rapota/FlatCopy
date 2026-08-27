@@ -5,48 +5,47 @@ namespace FlatCopy.FileSystemServices;
 
 internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILogger<DirectoryScannerService> _logger) : IDirectoryScannerService
 {
-    public IEnumerable<SourceItem> EnumerateFiles(SearchParams searchParams) =>
-        searchParams.SubFoldersOnly.Length == 0 && searchParams.SkipSubFolders.Length == 0
-            ? EnumerateFiles(searchParams.SourceFolder, searchParams.SearchPattern, searchParams.SkipExtensions)
-            : EnumerateFiles(searchParams.SourceFolder, searchParams.SearchPattern, searchParams.SkipExtensions, searchParams.SubFoldersOnly, searchParams.SkipSubFolders);
-
-    private IEnumerable<SourceItem> EnumerateFiles(string path, string searchPattern, string[] skipExtensions, string[] subFoldersOnly, string[] skipSubFolders)
+    public IEnumerable<FileItem> EnumerateFiles(SearchParams searchParams)
     {
-        subFoldersOnly = subFoldersOnly
-            .Select(x => Path.Combine(path, x))
+        IEnumerable<FileItem> items = searchParams.SubFoldersOnly.Length > 0
+            ? EnumerateSubfolders(searchParams.QueryParams, searchParams.SubFoldersOnly)
+            : QueryFiles(searchParams.QueryParams);
+
+        if (searchParams.SkipSubFolders.Length > 0)
+        {
+            items = FilterBySubfolders(items, searchParams.QueryParams, searchParams.SkipSubFolders);
+        }
+
+        return FilterByExtensionItems(items, searchParams.SkipExtensions);
+    }
+
+    private static IEnumerable<FileItem> FilterBySubfolders(IEnumerable<FileItem> items, QueryParams queryParams, string[] subFolders)
+    {
+        List<string> skipSubFolders = subFolders
+            .Select(x => Path.Combine(queryParams.SearchPath, x))
             .Select(x =>
                 x.EndsWith(Path.DirectorySeparatorChar)
                     ? x
                     : x + Path.DirectorySeparatorChar)
-            .ToArray();
+            .ToList();
 
-        skipSubFolders = skipSubFolders
-            .Select(x => Path.Combine(path, x))
-            .Select(x =>
-                x.EndsWith(Path.DirectorySeparatorChar)
-                    ? x
-                    : x + Path.DirectorySeparatorChar)
-            .ToArray();
-
-        bool IsSubFolder(string folder)
+        bool IsSkipFolder(string path)
         {
-            return subFoldersOnly.Any(x => folder.StartsWith(x, StringComparison.OrdinalIgnoreCase));
+            return skipSubFolders.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase));
         }
 
-        bool IsSkipFolder(string folder)
-        {
-            return skipSubFolders.Any(x => folder.StartsWith(x, StringComparison.OrdinalIgnoreCase));
-        }
+        return items.Where(x => !IsSkipFolder(x.FullPath));
+    }
 
-        foreach (SourceItem sourceItem in EnumerateFiles(path, searchPattern, skipExtensions))
+    private IEnumerable<FileItem> FilterByExtensionItems(IEnumerable<FileItem> items, string[] skipExtensions)
+    {
+        HashSet<string> se = skipExtensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (FileItem sourceItem in items)
         {
-            if (subFoldersOnly.Length > 0 && !IsSubFolder(sourceItem.SourcePath))
+            string extension = Path.GetExtension(sourceItem.FullPath);
+            if (se.Contains(extension))
             {
-                continue;
-            }
-
-            if (skipSubFolders.Length > 0 && IsSkipFolder(sourceItem.SourcePath))
-            {
+                _logger.LogInformation("Skipping file {filePath} with extension {extension}", sourceItem.FullPath, extension);
                 continue;
             }
 
@@ -54,23 +53,34 @@ internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILo
         }
     }
 
-    private IEnumerable<SourceItem> EnumerateFiles(string path, string searchPattern, string[] skipExtensions)
+    private IEnumerable<FileItem> EnumerateSubfolders(QueryParams queryParams, string[] subfolders)
     {
-        string searchPath = Path.TrimEndingDirectorySeparator(path);
-        HashSet<string> se = skipExtensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        foreach (string filePath in _fileSystemApi.EnumerateFiles(path, searchPattern))
+        foreach (string subfolder in subfolders)
         {
-            string extension = Path.GetExtension(filePath);
-            if (se.Contains(extension))
+            string searchPath = Path.Combine(queryParams.SearchPath, subfolder);
+
+            if (!_fileSystemApi.DirectoryExists(searchPath))
             {
-                _logger.LogInformation("Skipping file {filePath} with extension {extension}", filePath, extension);
+                _logger.LogWarning("Subfolder '{subfolder}' does not exist in path '{path}'", subfolder, queryParams.SearchPath);
                 continue;
             }
 
-            string relativePath = Path.GetRelativePath(searchPath, filePath);
+            foreach (FileItem sourceItem in QueryFiles(searchPath, queryParams.SearchPattern))
+            {
+                string relativePath = Path.GetRelativePath(queryParams.SearchPath, sourceItem.FullPath);
+                yield return new FileItem(sourceItem.FullPath, relativePath);
+            }
+        }
+    }
 
-            yield return new SourceItem(filePath, relativePath);
+    private IEnumerable<FileItem> QueryFiles(QueryParams queryParams) => QueryFiles(queryParams.SearchPath, queryParams.SearchPattern);
+
+    private IEnumerable<FileItem> QueryFiles(string path, string searchPattern)
+    {
+        foreach (string filePath in _fileSystemApi.EnumerateFiles(path, searchPattern))
+        {
+            string relativePath = Path.GetRelativePath(path, filePath);
+            yield return new FileItem(filePath, relativePath);
         }
     }
 }

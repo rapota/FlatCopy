@@ -15,7 +15,7 @@ public class DirectoryScannerServiceTests
     }
 
     [Fact]
-    public void NestedCopyTest()
+    public void EnumerateNestedTest()
     {
         string[] files =
         [
@@ -26,19 +26,20 @@ public class DirectoryScannerServiceTests
         _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*")).Returns(files);
 
         SearchParams searchParams = new(
+        new QueryParams(
             @"C:\inp",
-            "*",
-            [],
-            [],
-            []);
+            "*"),
+        [],
+        [],
+        []);
 
-        IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
-        List<SourceItem> sourceItems = result.ToList();
+        IEnumerable<FileItem> result = _directoryScannerService.EnumerateFiles(searchParams);
+        List<FileItem> sourceItems = result.ToList();
 
-        SourceItem[] expected =
+        FileItem[] expected =
         [
-            new SourceItem(@"C:\inp\file1.txt", "file1.txt"),
-            new SourceItem(@"C:\inp\sub\file2.txt", @"sub\file2.txt")
+            new(@"C:\inp\file1.txt", "file1.txt"),
+            new(@"C:\inp\sub\file2.txt", @"sub\file2.txt")
         ];
         Assert.Equivalent(expected, sourceItems);
     }
@@ -57,54 +58,61 @@ public class DirectoryScannerServiceTests
         _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*.*")).Returns(files);
 
         SearchParams searchParams = new(
+        new QueryParams(
             @"C:\inp",
-            "*.*",
-            [".zip", ".EXE"],
-            [],
-            []);
+            "*.*"),
+        [".zip", ".EXE"],
+        [],
+        []);
 
-        IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
-        List<SourceItem> sourceItems = result.ToList();
+        IEnumerable<FileItem> result = _directoryScannerService.EnumerateFiles(searchParams);
+        List<FileItem> sourceItems = result.ToList();
 
-        SourceItem[] expected =
+        FileItem[] expected =
         [
-            new SourceItem(@"C:\inp\file1.txt", "file1.txt"),
-            new SourceItem(@"C:\inp\file3.txt", "file3.txt")
+            new(@"C:\inp\file1.txt", "file1.txt"),
+            new(@"C:\inp\file3.txt", "file3.txt")
         ];
 
         Assert.Equivalent(expected, sourceItems);
     }
 
     [Fact]
-    public void SubFoldersCopyTest()
+    public void EnumerateSubFoldersOnlyTest()
     {
-        string[] files =
+        string[] subFiles1 =
         [
-            @"C:\inp\file.txt",
-            @"C:\inp\sub1file.txt",
             @"C:\inp\sub1\file1.txt",
-            @"C:\inp\sub2\file2.txt",
-            @"C:\inp\sub3\file3.txt",
-            @"C:\inp\sub3\sub31\file4.txt"
+            @"C:\inp\sub1\file2.txt"
         ];
+        _fileSystemMock.Setup(x => x.DirectoryExists(@"C:\inp\sub1")).Returns(true);
+        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp\sub1", "*.*")).Returns(subFiles1);
 
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*.*")).Returns(files);
+        string[] subFiles2 =
+        [
+            @"C:\inp\sub2\subsub\file3.txt",
+            @"C:\inp\sub2\subsub\file4.txt"
+        ];
+        _fileSystemMock.Setup(x => x.DirectoryExists(@"C:\inp\sub2\subsub")).Returns(true);
+        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp\sub2\subsub", "*.*")).Returns(subFiles2);
 
         SearchParams searchParams = new(
+            new QueryParams(
             @"C:\inp",
-            "*.*",
+            "*.*"),
             [],
-            ["sub1", "SUB2", @"sub3\sub31"],
+            ["sub1", @"sub2\subsub"],
             []);
 
-        IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
-        List<SourceItem> sourceItems = result.ToList();
+        IEnumerable<FileItem> result = _directoryScannerService.EnumerateFiles(searchParams);
+        List<FileItem> sourceItems = result.ToList();
 
-        SourceItem[] expected =
+        FileItem[] expected =
         [
-            new SourceItem(@"C:\inp\sub1\file1.txt", @"sub1\file1.txt"),
-            new SourceItem(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
-            new SourceItem(@"C:\inp\sub3\sub31\file4.txt", @"sub3\sub31\file4.txt")
+            new(@"C:\inp\sub1\file1.txt", @"sub1\file1.txt"),
+            new(@"C:\inp\sub1\file2.txt", @"sub1\file2.txt"),
+            new(@"C:\inp\sub2\subsub\file3.txt", @"sub2\subsub\file3.txt"),
+            new(@"C:\inp\sub2\subsub\file4.txt", @"sub2\subsub\file4.txt")
         ];
 
         Assert.Equivalent(expected, sourceItems);
@@ -126,21 +134,22 @@ public class DirectoryScannerServiceTests
         _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*.*")).Returns(files);
 
         SearchParams searchParams = new(
+            new QueryParams(
             @"C:\inp",
-            "*.*",
+            "*.*"),
             [],
             [],
             ["SUB1", @"sub3\sub31"]);
 
-        IEnumerable<SourceItem> result = _directoryScannerService.EnumerateFiles(searchParams);
-        List<SourceItem> sourceItems = result.ToList();
+        IEnumerable<FileItem> result = _directoryScannerService.EnumerateFiles(searchParams);
+        List<FileItem> sourceItems = result.ToList();
 
-        SourceItem[] expected =
+        FileItem[] expected =
         [
-            new SourceItem(@"C:\inp\file0.txt", "file0.txt"),
-            new SourceItem(@"C:\inp\sub1file0.txt", "sub1file0.txt"),
-            new SourceItem(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
-            new SourceItem(@"C:\inp\sub3\file3.txt", @"sub3\file3.txt")
+            new(@"C:\inp\file0.txt", "file0.txt"),
+            new(@"C:\inp\sub1file0.txt", "sub1file0.txt"),
+            new(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
+            new(@"C:\inp\sub3\file3.txt", @"sub3\file3.txt")
         ];
         Assert.Equivalent(expected, sourceItems);
     }

@@ -11,9 +11,9 @@ internal sealed class FlatCopyService(
 {
     public List<string> FlatCopy(FlatCopyParams flatCopyParams)
     {
-        if (!_fileSystemApi.DirectoryExists(flatCopyParams.SearchParams.SourceFolder))
+        if (!_fileSystemApi.DirectoryExists(flatCopyParams.SearchParams.QueryParams.SearchPath))
         {
-            _logger.LogWarning("Directory not found: {directory}", flatCopyParams.SearchParams.SourceFolder);
+            _logger.LogWarning("Directory not found: {directory}", flatCopyParams.SearchParams.QueryParams.SearchPath);
             return [];
         }
 

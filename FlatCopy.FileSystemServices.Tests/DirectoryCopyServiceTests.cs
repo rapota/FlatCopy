@@ -17,19 +17,20 @@ public class DirectoryCopyServiceTests
     [Fact]
     public void CopyDirectoryTest()
     {
-        SourceItem[] sourceItems = new[]
-        {
-            new SourceItem(@"C:\inp\file0.txt","file0.txt"),
-            new SourceItem(@"C:\inp\sub\file1.txt",@"sub\file1.txt")
-        };
+        FileItem[] sourceItems =
+        [
+            new(@"C:\inp\file0.txt","file0.txt"),
+            new(@"C:\inp\sub\file1.txt",@"sub\file1.txt")
+        ];
 
-        SearchParams searchParams = new SearchParams(
-            @"C:\inp",
-            "*",
+        SearchParams searchParams = new(
+            new QueryParams(
+                @"C:\inp",
+                "*"),
             [],
             [],
             []);
-        CopyParams copyParams = new CopyParams(false, OverwriteParams.No);
+        CopyParams copyParams = new(false, OverwriteParams.No);
         DirectoryCopyParams directoryCopyParams = new(searchParams, copyParams, @"C:\out");
 
         _directoryScannerServiceMock.Setup(x => x.EnumerateFiles(searchParams)).Returns(sourceItems);
