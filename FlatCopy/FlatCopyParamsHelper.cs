@@ -3,9 +3,21 @@ using FlatCopy.Settings;
 
 namespace FlatCopy;
 
-public static class FlatCopyParamsHelper
+internal static class FlatCopyParamsHelper
 {
-    public static OverwriteParams ToOverwriteParams(OverwriteSettings overwrite) =>
+    public static List<FlatCopyParams> BuildTasks(this CopySettings copySettings)
+    {
+        List<FlatCopyParams> result = new();
+        foreach (KeyValuePair<string, SourceSettings> copySource in copySettings.Sources)
+        {
+            FlatCopyParams flatCopyParams = copySource.Value.ToFlatCopyParams(copySource.Key, copySettings);
+            result.Add(flatCopyParams);
+        }
+        
+        return result;
+    }
+
+    private static OverwriteParams ToOverwriteParams(OverwriteSettings overwrite) =>
         overwrite switch
         {
             OverwriteSettings.No => OverwriteParams.No,
@@ -14,19 +26,19 @@ public static class FlatCopyParamsHelper
             _ => throw new ArgumentOutOfRangeException(nameof(overwrite), overwrite, null)
         };
 
-    public static FlatCopyParams ToFlatCopyParams(string name, CopySettings copySettings, SourceSettings sourceSettings)
+    private static FlatCopyParams ToFlatCopyParams(this SourceSettings sourceSettings, string name, CopySettings copySettings)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentException.ThrowIfNullOrEmpty(copySettings.TargetFolder);
 
         return new FlatCopyParams(
             name,
-            ToCopyParams(copySettings, sourceSettings),
-            ToSearchParams(copySettings, sourceSettings),
+            sourceSettings.ToCopyParams(copySettings),
+            sourceSettings.ToSearchParams(copySettings),
             copySettings.TargetFolder);
     }
 
-    private static SearchParams ToSearchParams(CopySettings copySettings, SourceSettings sourceSettings)
+    private static SearchParams ToSearchParams(this SourceSettings sourceSettings, CopySettings copySettings)
     {
         ArgumentException.ThrowIfNullOrEmpty(sourceSettings.SourceFolder);
         ArgumentNullException.ThrowIfNull(copySettings.SearchPattern);
@@ -41,7 +53,7 @@ public static class FlatCopyParamsHelper
             sourceSettings.SkipSubFolders ?? []);
     }
 
-    private static CopyParams ToCopyParams(CopySettings copySettings, SourceSettings sourceSettings) =>
+    private static CopyParams ToCopyParams(this SourceSettings sourceSettings, CopySettings copySettings) =>
         new(
             sourceSettings.CreateHardLinks ?? copySettings.CreateHardLinks,
             ToOverwriteParams(sourceSettings.Overwrite ?? copySettings.Overwrite));

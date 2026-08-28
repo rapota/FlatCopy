@@ -16,14 +16,11 @@ public sealed class CopySettings
 
     public bool CreateHardLinks { get; set; }
 
-    public List<string> SourceFolders { get; set; }
-
     public Dictionary<string, SourceSettings> Sources { get; set; }
 
     public CopySettings()
     {
         TargetFolder = string.Empty;
-        SourceFolders = new List<string>();
         SearchPattern = "*";
         SkipExtensions = [];
         SkipFolders = new List<string>();

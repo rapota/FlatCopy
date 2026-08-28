@@ -14,34 +14,8 @@ public sealed class Application(
 {
     public void Run()
     {
-        List<FlatCopyParams> flatCopyParamsList = BuildTasks(_options.Value);
-        if (_logger.IsEnabled(LogLevel.Information))
-        {
-            _logger.LogInformation("{count} source folders to copy.", flatCopyParamsList.Count);
-
-            int i = 0;
-            foreach (FlatCopyParams flatCopyParams in flatCopyParamsList)
-            {
-                i++;
-
-                SearchParams searchParams = flatCopyParams.SearchParams;
-                StringBuilder sb = new(searchParams.QueryParams.SearchPath);
-
-                if (searchParams.SkipSubFolders.Length > 0)
-                {
-                    sb.Append(" ");
-                    sb.AppendJoin(' ', searchParams.SkipSubFolders.Select(x => "-" + x));
-                }
-
-                if (searchParams.SubFoldersOnly.Length > 0)
-                {
-                    sb.Append(" ");
-                    sb.AppendJoin(' ', searchParams.SubFoldersOnly.Select(x => "+" + x));
-                }
-
-                _logger.LogInformation("Source folder #{i}: {folders}", i, sb.ToString());
-            }
-        }
+        List<FlatCopyParams> flatCopyParamsList = _options.Value.BuildTasks();
+        LogParameters(flatCopyParamsList);
 
         Stopwatch sw = Stopwatch.StartNew();
         List<string> copiedFiles = CopyFiles(flatCopyParamsList);
@@ -55,32 +29,37 @@ public sealed class Application(
         _logger.LogInformation("Deleted {count} extra files for {elapsed}", count, swd.Elapsed);
     }
 
-    private static List<FlatCopyParams> BuildTasks(CopySettings copySettings)
+    private void LogParameters(List<FlatCopyParams> flatCopyParamsList)
     {
-        List<FlatCopyParams> result = new();
-        foreach (KeyValuePair<string, SourceSettings> copySource in copySettings.Sources)
+        if (!_logger.IsEnabled(LogLevel.Information))
         {
-            FlatCopyParams flatCopyParams = FlatCopyParamsHelper.ToFlatCopyParams(copySource.Key, copySettings, copySource.Value);
-            result.Add(flatCopyParams);
+            return;
         }
 
-        CopyParams copyParams = new(copySettings.CreateHardLinks, FlatCopyParamsHelper.ToOverwriteParams(copySettings.Overwrite));
-        foreach (string sourceFolder in copySettings.SourceFolders)
+        _logger.LogInformation("{count} source folders to copy.", flatCopyParamsList.Count);
+
+        int i = 0;
+        foreach (FlatCopyParams flatCopyParams in flatCopyParamsList)
         {
-            SearchParams searchParams = new(
-                new QueryParams(sourceFolder, copySettings.SearchPattern),
-                copySettings.SkipExtensions,
-                [],
-                []);
+            i++;
 
-            string path = Path.TrimEndingDirectorySeparator(sourceFolder);
-            string fileName = Path.GetFileName(path);
-            FlatCopyParams flatCopyParams = new(fileName, copyParams, searchParams, copySettings.TargetFolder);
+            SearchParams searchParams = flatCopyParams.SearchParams;
+            StringBuilder sb = new(searchParams.QueryParams.SearchPath);
 
-            result.Add(flatCopyParams);
+            if (searchParams.SkipSubFolders.Length > 0)
+            {
+                sb.Append(" ");
+                sb.AppendJoin(' ', searchParams.SkipSubFolders.Select(x => $"-'{x}'"));
+            }
+
+            if (searchParams.SubFoldersOnly.Length > 0)
+            {
+                sb.Append(" ");
+                sb.AppendJoin(' ', searchParams.SubFoldersOnly.Select(x => $"+'{x}'"));
+            }
+
+            _logger.LogInformation("Source folder #{i}: {folders}", i, sb.ToString());
         }
-
-        return result;
     }
 
     private List<string> CopyFiles(IEnumerable<FlatCopyParams> flatCopyParamsList)
