@@ -15,9 +15,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 10.0.x
     - name: Restore dependencies
@@ -29,7 +29,7 @@ jobs:
     - name: Publish win-x64
       run: dotnet publish FlatCopy\FlatCopy.csproj --configuration Release --output flatcopy-win-x64 --runtime win-x64
     - name: Upload win-x64
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v7
       with:
         name: flatcopy-win-x64
         path: flatcopy-win-x64
