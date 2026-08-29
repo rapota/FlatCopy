@@ -1,84 +1,83 @@
 ﻿using FlatCopy.FileSystemServices.FileSystem;
-using Microsoft.Extensions.Logging;
 
 namespace FlatCopy.FileSystemServices.Tests;
 
 public class FileCopyServiceTests
 {
-    private readonly Mock<IFileSystemApi> _fileSystemMock;
+    private readonly IFileSystemApiMock _fileSystemMock;
     private readonly FileCopyService _fileCopyService;
 
     public FileCopyServiceTests()
     {
-        _fileSystemMock = new Mock<IFileSystemApi>();
-        _fileCopyService = new FileCopyService(_fileSystemMock.Object, Mock.Of<ILogger<FileCopyService>>());
+        _fileSystemMock = IFileSystemApi.Mock();
+        _fileCopyService = new FileCopyService(_fileSystemMock.Object, Mock.Logger<FileCopyService>());
     }
 
-    [Fact]
-    public void CopyNewFileTest()
+    [Test]
+    public async Task CopyNewFileTest()
     {
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(false);
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(false);
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.No));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Once);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt").WasCalled(Times.Once);
     }
 
-    [Fact]
-    public void CopyExistingFileTest()
+    [Test]
+    public async Task CopyExistingFileTest()
     {
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(true);
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(true);
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.No));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Never);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt").WasNeverCalled();
     }
 
-    [Fact]
-    public void OverwriteNewFileTest()
+    [Test]
+    public async Task OverwriteNewFileTest()
     {
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(false);
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(false);
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt"), Times.Once);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt").WasCalled(Times.Once);
     }
 
-    [Fact]
-    public void OverwriteUpdatedFileTest()
+    [Test]
+    public async Task OverwriteUpdatedFileTest()
     {
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(true);
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(DateTime.UtcNow.AddMinutes(1), 1));
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(DateTime.UtcNow, 1));
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(true);
+        _fileSystemMock.GetFileInformation(@"C:\file.txt").Returns(new FileInformation(DateTime.UtcNow.AddMinutes(1), 1));
+        _fileSystemMock.GetFileInformation(@"C:\out.txt").Returns(new FileInformation(DateTime.UtcNow, 1));
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Once);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt", true).WasCalled(Times.Once);
     }
 
-    [Fact]
-    public void OverwriteSameFileTest()
+    [Test]
+    public async Task OverwriteSameFileTest()
     {
         DateTime dt = DateTime.UtcNow;
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(true);
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(dt, 1));
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(dt, 1));
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(true);
+        _fileSystemMock.GetFileInformation(@"C:\file.txt").Returns(new FileInformation(dt, 1));
+        _fileSystemMock.GetFileInformation(@"C:\out.txt").Returns(new FileInformation(dt, 1));
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Newer));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Never);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt", true).WasNeverCalled();
     }
 
-    [Fact]
-    public void AlwaysOverwriteSameFileTest()
+    [Test]
+    public async Task AlwaysOverwriteSameFileTest()
     {
         DateTime dt = DateTime.UtcNow;
-        _fileSystemMock.Setup(x => x.FileExists(@"C:\out.txt")).Returns(true);
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\file.txt")).Returns(new FileInformation(dt, 1));
-        _fileSystemMock.Setup(x => x.GetFileInformation(@"C:\out.txt")).Returns(new FileInformation(dt, 1));
+        _fileSystemMock.FileExists(@"C:\out.txt").Returns(true);
+        _fileSystemMock.GetFileInformation(@"C:\file.txt").Returns(new FileInformation(dt, 1));
+        _fileSystemMock.GetFileInformation(@"C:\out.txt").Returns(new FileInformation(dt, 1));
 
         _fileCopyService.CopyFile(@"C:\file.txt", @"C:\out.txt", new CopyParams(false, OverwriteParams.Yes));
 
-        _fileSystemMock.Verify(x => x.CopyFile(@"C:\file.txt", @"C:\out.txt", true), Times.Once);
+        _fileSystemMock.CopyFile(@"C:\file.txt", @"C:\out.txt", true).WasCalled(Times.Once);
     }
 }

@@ -1,21 +1,20 @@
 ﻿using FlatCopy.FileSystemServices.FileSystem;
-using Microsoft.Extensions.Logging;
 
 namespace FlatCopy.FileSystemServices.Tests;
 
 public class DirectoryScannerServiceTests
 {
-    private readonly Mock<IFileSystemApi> _fileSystemMock;
+    private readonly IFileSystemApiMock _fileSystemMock;
     private readonly DirectoryScannerService _directoryScannerService;
 
     public DirectoryScannerServiceTests()
     {
-        _fileSystemMock = new Mock<IFileSystemApi>();
-        _directoryScannerService = new DirectoryScannerService(_fileSystemMock.Object, Mock.Of<ILogger<DirectoryScannerService>>());
+        _fileSystemMock = IFileSystemApi.Mock();
+        _directoryScannerService = new DirectoryScannerService(_fileSystemMock, Mock.Logger<DirectoryScannerService>());
     }
 
-    [Fact]
-    public void EnumerateNestedTest()
+    [Test]
+    public async Task EnumerateNestedTest()
     {
         string[] files =
         [
@@ -23,7 +22,7 @@ public class DirectoryScannerServiceTests
             @"C:\inp\sub\file2.txt"
         ];
 
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*")).Returns(files);
+        _fileSystemMock.EnumerateFiles(@"C:\inp", "*").Returns(files);
 
         SearchParams searchParams = new(
         new QueryParams(
@@ -41,11 +40,12 @@ public class DirectoryScannerServiceTests
             new(@"C:\inp\file1.txt", "file1.txt"),
             new(@"C:\inp\sub\file2.txt", @"sub\file2.txt")
         ];
-        Assert.Equivalent(expected, sourceItems);
+
+        await Assert.That(sourceItems).IsEquivalentTo(expected);
     }
 
-    [Fact]
-    public void SkipExtensionTest()
+    [Test]
+    public async Task SkipExtensionTest()
     {
         string[] files =
         [
@@ -55,7 +55,7 @@ public class DirectoryScannerServiceTests
             @"C:\inp\file4.exe"
         ];
 
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*.*")).Returns(files);
+        _fileSystemMock.EnumerateFiles(@"C:\inp", "*.*").Returns(files);
 
         SearchParams searchParams = new(
         new QueryParams(
@@ -74,27 +74,27 @@ public class DirectoryScannerServiceTests
             new(@"C:\inp\file3.txt", "file3.txt")
         ];
 
-        Assert.Equivalent(expected, sourceItems);
+        await Assert.That(sourceItems).IsEquivalentTo(expected);
     }
 
-    [Fact]
-    public void EnumerateSubFoldersOnlyTest()
+    [Test]
+    public async Task EnumerateSubFoldersOnlyTest()
     {
         string[] subFiles1 =
         [
             @"C:\inp\sub1\file1.txt",
             @"C:\inp\sub1\file2.txt"
         ];
-        _fileSystemMock.Setup(x => x.DirectoryExists(@"C:\inp\sub1")).Returns(true);
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp\sub1", "*.*")).Returns(subFiles1);
+        _fileSystemMock.DirectoryExists(@"C:\inp\sub1").Returns(true);
+        _fileSystemMock.EnumerateFiles(@"C:\inp\sub1", "*.*").Returns(subFiles1);
 
         string[] subFiles2 =
         [
             @"C:\inp\sub2\subsub\file3.txt",
             @"C:\inp\sub2\subsub\file4.txt"
         ];
-        _fileSystemMock.Setup(x => x.DirectoryExists(@"C:\inp\sub2\subsub")).Returns(true);
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp\sub2\subsub", "*.*")).Returns(subFiles2);
+        _fileSystemMock.DirectoryExists(@"C:\inp\sub2\subsub").Returns(true);
+        _fileSystemMock.EnumerateFiles(@"C:\inp\sub2\subsub", "*.*").Returns(subFiles2);
 
         SearchParams searchParams = new(
             new QueryParams(
@@ -115,11 +115,11 @@ public class DirectoryScannerServiceTests
             new(@"C:\inp\sub2\subsub\file4.txt", @"sub2\subsub\file4.txt")
         ];
 
-        Assert.Equivalent(expected, sourceItems);
+        await Assert.That(sourceItems).IsEquivalentTo(expected);
     }
 
-    [Fact]
-    public void SkipSubFoldersTest()
+    [Test]
+    public async Task SkipSubFoldersTest()
     {
         string[] files =
         [
@@ -131,7 +131,7 @@ public class DirectoryScannerServiceTests
             @"C:\inp\sub3\sub31\file4.txt",
         ];
 
-        _fileSystemMock.Setup(x => x.EnumerateFiles(@"C:\inp", "*.*")).Returns(files);
+        _fileSystemMock.EnumerateFiles(@"C:\inp", "*.*").Returns(files);
 
         SearchParams searchParams = new(
             new QueryParams(
@@ -151,6 +151,6 @@ public class DirectoryScannerServiceTests
             new(@"C:\inp\sub2\file2.txt", @"sub2\file2.txt"),
             new(@"C:\inp\sub3\file3.txt", @"sub3\file3.txt")
         ];
-        Assert.Equivalent(expected, sourceItems);
+        await Assert.That(sourceItems).IsEquivalentTo(expected);
     }
 }
