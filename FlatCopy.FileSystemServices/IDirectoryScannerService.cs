@@ -1,12 +1,12 @@
 ﻿namespace FlatCopy.FileSystemServices;
 
-public record QueryParams(string SearchPath, string SearchPattern);
+public record QueryParams(string SearchPath, string SearchPattern, bool SearchArchives);
 
 public record SearchParams(QueryParams QueryParams, string[] SkipExtensions, string[] SubFoldersOnly, string[] SkipSubFolders);
 
-public record FileItem(string FullPath, string RelativePath);
+public record FileItem(string FullPath, string RelativePath, bool IsArchive = false);
 
-public interface IDirectoryScannerService
+internal interface IDirectoryScannerService
 {
     IEnumerable<FileItem> EnumerateFiles(SearchParams searchParams);
 }

@@ -9,7 +9,7 @@ public enum OverwriteParams
 
 public record CopyParams(bool CreateHardLinks, OverwriteParams Overwrite);
 
-public interface IFileCopyService
+internal interface IFileCopyService
 {
     void CopyFile(string sourceFile, string destFileName, CopyParams copyParams);
 }

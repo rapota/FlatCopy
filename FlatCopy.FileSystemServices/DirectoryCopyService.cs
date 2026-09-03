@@ -1,6 +1,9 @@
-﻿namespace FlatCopy.FileSystemServices;
+﻿using FlatCopy.FileSystemServices.FileSystem;
 
-internal sealed class DirectoryCopyService(IDirectoryScannerService _directoryScannerService, IFileCopyService _fileCopyService) : IDirectoryCopyService
+namespace FlatCopy.FileSystemServices;
+
+internal sealed class DirectoryCopyService(IDirectoryScannerService _directoryScannerService, IFileCopyService _fileCopyService, IArchiveCopyService _archiveCopyService)
+    : IDirectoryCopyService
 {
     public List<string> CopyDirectory(DirectoryCopyParams directoryCopyParams, params string[] customPrefixes)
     {
@@ -14,9 +17,16 @@ internal sealed class DirectoryCopyService(IDirectoryScannerService _directorySc
             string fileName = sourceItem.RelativePath.Replace(Path.DirectorySeparatorChar, '_');
             string destFileName = Path.Combine(directoryCopyParams.DestDirectory, customPrefix + fileName);
 
-            _fileCopyService.CopyFile(sourceItem.FullPath, destFileName, directoryCopyParams.CopyParams);
-
-            result.Add(destFileName);
+            if (sourceItem.IsArchive)
+            {
+                List<string> extractedFiles = _archiveCopyService.ExtractFiles(sourceItem.FullPath, destFileName, directoryCopyParams.CopyParams.Overwrite);
+                result.AddRange(extractedFiles);
+            }
+            else
+            {
+                _fileCopyService.CopyFile(sourceItem.FullPath, destFileName, directoryCopyParams.CopyParams);
+                result.Add(destFileName);
+            }
         }
 
         return result;

@@ -11,6 +11,7 @@ public static class FileSystemServiceExtensions
 {
     public static IServiceCollection AddFileSystemServices(this IServiceCollection services) =>
         services
+            .AddSingleton<IArchiveCopyService, ArchiveCopyService>()
             .AddSingleton<IFileSystemApi, FileSystemApi>()
             .AddSingleton<IFileCopyService, FileCopyService>()
             .AddSingleton<IDirectoryScannerService, DirectoryScannerService>()

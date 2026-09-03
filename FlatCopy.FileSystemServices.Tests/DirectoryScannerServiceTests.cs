@@ -27,7 +27,8 @@ public class DirectoryScannerServiceTests
         SearchParams searchParams = new(
         new QueryParams(
             @"C:\inp",
-            "*"),
+            "*",
+            false),
         [],
         [],
         []);
@@ -51,7 +52,7 @@ public class DirectoryScannerServiceTests
         [
             @"C:\inp\file1.txt",
             @"C:\inp\file2.zip",
-            @"C:\inp\file3.txt",
+            @"C:\inp\file3.7z",
             @"C:\inp\file4.exe"
         ];
 
@@ -60,8 +61,9 @@ public class DirectoryScannerServiceTests
         SearchParams searchParams = new(
         new QueryParams(
             @"C:\inp",
-            "*.*"),
-        [".zip", ".EXE"],
+            "*.*",
+            false),
+        [".7z", ".EXE"],
         [],
         []);
 
@@ -71,6 +73,41 @@ public class DirectoryScannerServiceTests
         FileItem[] expected =
         [
             new(@"C:\inp\file1.txt", "file1.txt"),
+            new(@"C:\inp\file2.zip", "file2.zip", IsArchive: true)
+        ];
+
+        await Assert.That(sourceItems).IsEquivalentTo(expected);
+    }
+
+    [Test]
+    public async Task CollectArchivesTest()
+    {
+        string[] files =
+        [
+            @"C:\inp\file1.txt",
+            @"C:\inp\file2.zip",
+            @"C:\inp\file3.txt",
+            @"C:\inp\file4.exe"
+        ];
+
+        _fileSystemMock.EnumerateFiles(@"C:\inp", "*.*").Returns(files);
+
+        SearchParams searchParams = new(
+            new QueryParams(
+                @"C:\inp",
+                "*.*",
+                true),
+            [".zip", ".EXE"],
+            [],
+            []);
+
+        IEnumerable<FileItem> result = _directoryScannerService.EnumerateFiles(searchParams);
+        List<FileItem> sourceItems = result.ToList();
+
+        FileItem[] expected =
+        [
+            new(@"C:\inp\file1.txt", "file1.txt"),
+            new(@"C:\inp\file2.zip", "file2.zip", IsArchive: true),
             new(@"C:\inp\file3.txt", "file3.txt")
         ];
 
@@ -98,8 +135,9 @@ public class DirectoryScannerServiceTests
 
         SearchParams searchParams = new(
             new QueryParams(
-            @"C:\inp",
-            "*.*"),
+                @"C:\inp",
+                "*.*",
+                false),
             [],
             ["sub1", @"sub2\subsub"],
             []);
@@ -135,8 +173,9 @@ public class DirectoryScannerServiceTests
 
         SearchParams searchParams = new(
             new QueryParams(
-            @"C:\inp",
-            "*.*"),
+                @"C:\inp",
+                "*.*",
+                false),
             [],
             [],
             ["SUB1", @"sub3\sub31"]);

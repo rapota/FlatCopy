@@ -1,8 +1,8 @@
 ﻿namespace FlatCopy.FileSystemServices.FileSystem;
 
-public record FileInformation(DateTime LastWriteTimeUtc, long Length);
+public record FileInformation(DateTimeOffset LastWriteTimeUtc, long Length);
 
-public interface IFileSystemApi
+internal interface IFileSystemApi
 {
     bool FileExists(string path);
 

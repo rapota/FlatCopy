@@ -3,7 +3,7 @@ using FlatCopy.Settings;
 
 namespace FlatCopy;
 
-internal static class FlatCopyParamsHelper
+internal static class SettingsExtensions
 {
     public static List<FlatCopyParams> BuildTasks(this CopySettings copySettings)
     {
@@ -33,9 +33,8 @@ internal static class FlatCopyParamsHelper
 
         return new FlatCopyParams(
             name,
-            sourceSettings.ToCopyParams(copySettings),
             sourceSettings.ToSearchParams(copySettings),
-            copySettings.TargetFolder);
+            sourceSettings.ToCopyParams(copySettings), copySettings.TargetFolder);
     }
 
     private static SearchParams ToSearchParams(this SourceSettings sourceSettings, CopySettings copySettings)
@@ -47,8 +46,9 @@ internal static class FlatCopyParamsHelper
         return new SearchParams(
             new QueryParams(
                 sourceSettings.SourceFolder,
-                sourceSettings.SearchPattern ?? copySettings.SearchPattern),
-                sourceSettings.SkipExtensions ?? copySettings.SkipExtensions,
+                sourceSettings.SearchPattern ?? copySettings.SearchPattern,
+                sourceSettings.Unpack ?? copySettings.Unpack),
+            sourceSettings.SkipExtensions ?? copySettings.SkipExtensions,
             sourceSettings.SubFoldersOnly ?? [],
             sourceSettings.SkipSubFolders ?? []);
     }

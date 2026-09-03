@@ -19,8 +19,8 @@ public class FlatCopyServiceTests
     public async Task CopyFromMissingDirectory()
     {
         CopyParams copyParams = new(false, OverwriteParams.No);
-        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*"), [], [], []);
-        FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
+        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*", false), [], [], []);
+        FlatCopyParams flatCopyParams = new("Name", searchParams, copyParams, @"C:\out");
 
         _fileSystemMock.DirectoryExists(@"C:\inp").Returns(false);
 
@@ -36,8 +36,8 @@ public class FlatCopyServiceTests
     public async Task CopyToMissingDirectoryTest()
     {
         CopyParams copyParams = new(false, OverwriteParams.No);
-        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*"), [], [], []);
-        FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
+        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*", false), [], [], []);
+        FlatCopyParams flatCopyParams = new("Name", searchParams, copyParams, @"C:\out");
 
         _fileSystemMock.DirectoryExists(@"C:\inp").Returns(true);
         _fileSystemMock.DirectoryExists(@"C:\out").Returns(false);
@@ -57,8 +57,8 @@ public class FlatCopyServiceTests
     public async Task CopyDirectoryTest()
     {
         CopyParams copyParams = new(false, OverwriteParams.No);
-        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*"), [], [], []);
-        FlatCopyParams flatCopyParams = new("Name", copyParams, searchParams, @"C:\out");
+        SearchParams searchParams = new(new QueryParams(@"C:\inp", "*", false), [], [], []);
+        FlatCopyParams flatCopyParams = new("Name", searchParams, copyParams, @"C:\out");
 
         _fileSystemMock.DirectoryExists(@"C:\inp").Returns(true);
         _fileSystemMock.DirectoryExists(@"C:\out").Returns(true);

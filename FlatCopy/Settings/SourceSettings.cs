@@ -12,6 +12,8 @@ public sealed class SourceSettings
 
     public bool? CreateHardLinks { get; set; }
 
+    public bool? Unpack { get; set; }
+
     public string[]? SubFoldersOnly { get; set; }
 
     public string[]? SkipSubFolders { get; set; }

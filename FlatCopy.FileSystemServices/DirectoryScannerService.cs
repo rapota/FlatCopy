@@ -16,7 +16,7 @@ internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILo
             items = FilterBySubfolders(items, searchParams.QueryParams, searchParams.SkipSubFolders);
         }
 
-        return FilterByExtensionItems(items, searchParams.SkipExtensions);
+        return FilterByExtensionItems(items, searchParams.SkipExtensions, searchParams.QueryParams.SearchArchives);
     }
 
     private static IEnumerable<FileItem> FilterBySubfolders(IEnumerable<FileItem> items, QueryParams queryParams, string[] subFolders)
@@ -37,11 +37,17 @@ internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILo
         return items.Where(x => !IsSkipFolder(x.FullPath));
     }
 
-    private IEnumerable<FileItem> FilterByExtensionItems(IEnumerable<FileItem> items, string[] skipExtensions)
+    private IEnumerable<FileItem> FilterByExtensionItems(IEnumerable<FileItem> items, string[] skipExtensions, bool searchArchives)
     {
         HashSet<string> se = skipExtensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (FileItem sourceItem in items)
         {
+            if (searchArchives && sourceItem.IsArchive)
+            {
+                yield return sourceItem;
+                continue;
+            }
+
             string extension = Path.GetExtension(sourceItem.FullPath);
             if (se.Contains(extension))
             {
@@ -79,8 +85,12 @@ internal sealed class DirectoryScannerService(IFileSystemApi _fileSystemApi, ILo
     {
         foreach (string filePath in _fileSystemApi.EnumerateFiles(path, searchPattern))
         {
+            string extension = Path.GetExtension(filePath);
+            bool isArchive = string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase);
+
             string relativePath = Path.GetRelativePath(path, filePath);
-            yield return new FileItem(filePath, relativePath);
+
+            yield return new FileItem(filePath, relativePath, isArchive);
         }
     }
 }

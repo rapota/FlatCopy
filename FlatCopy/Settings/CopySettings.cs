@@ -4,27 +4,17 @@ namespace FlatCopy.Settings;
 
 public sealed class CopySettings
 {
-    public string TargetFolder { get; set; }
+    public string TargetFolder { get; set; } = string.Empty;
 
-    public string SearchPattern { get; set; }
+    public string SearchPattern { get; set; } = "*";
 
-    public string[] SkipExtensions { get; set; }
+    public string[] SkipExtensions { get; set; } = [];
 
-    public List<string> SkipFolders { get; set; }
-
-    public OverwriteSettings Overwrite { get; set; }
+    public OverwriteSettings Overwrite { get; set; } = OverwriteSettings.No;
 
     public bool CreateHardLinks { get; set; }
 
-    public Dictionary<string, SourceSettings> Sources { get; set; }
+    public bool Unpack { get; set; }
 
-    public CopySettings()
-    {
-        TargetFolder = string.Empty;
-        SearchPattern = "*";
-        SkipExtensions = [];
-        SkipFolders = new List<string>();
-        Overwrite = OverwriteSettings.No;
-        Sources = new Dictionary<string, SourceSettings>();
-    }
+    public Dictionary<string, SourceSettings> Sources { get; set; } = new();
 }
